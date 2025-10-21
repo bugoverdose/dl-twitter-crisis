@@ -1,0 +1,29 @@
+name: crisisbench-dl
+channels:
+  - pytorch
+  - nvidia      # Optional: enables easy CUDA installs (Linux/Windows with NVIDIA GPU)
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  # --- Choose ONE of the following for PyTorch ---
+  # GPU (Linux/Win, NVIDIA): uncomment the next 2 lines
+  # - pytorch
+  # - pytorch-cuda=12.1
+  # CPU-only (portable): uncomment the next 2 lines instead
+  - pytorch
+  - cpuonly
+  - torchvision
+  - torchaudio
+  - pandas
+  - numpy<2.0
+  - scikit-learn
+  - matplotlib
+  - tqdm
+  - pyyaml
+  - pip
+  - pip:
+      - transformers>=4.44
+      - accelerate
+      - evaluate
+      - datasets
