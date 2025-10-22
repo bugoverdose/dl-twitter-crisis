@@ -6,9 +6,16 @@
 # Instructions
 1. create a new conda env: `conda env create -f environment.yml`
 2. conda activate crisisbench-dl
-3. `python train.py`
+
+- Anomaly Detection: `anomaly_detection.ipynb`
+- CrisisBench: `python train.py`
 
 # Notes about Dataset
+
+## Turkey and Syria Earthquake Tweets
+
+- [Kaggle - Turkey and Syria Earthquake Tweets](https://crisisnlp.qcri.org/crisis_datasets_benchmarks)
+  - Reference: [Katalinić & Dunđer (2025)](https://www.mdpi.com/2079-9292/14/11/2273)
 
 ## CrisisBench
 
