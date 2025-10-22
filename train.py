@@ -80,9 +80,9 @@ def main():
     set_seed(42)
 
     # load data
-    train_df = load_crisisbench("./data/all_data_en/crisis_consolidated_humanitarian_filtered_lang_en_train.tsv")
-    val_df = load_crisisbench("./data/all_data_en/crisis_consolidated_humanitarian_filtered_lang_en_dev.tsv")
-    test_df = load_crisisbench("./data/all_data_en/crisis_consolidated_humanitarian_filtered_lang_en_test.tsv")
+    train_df = load_crisisbench("./data/crisisbench/all_data_en/crisis_consolidated_humanitarian_filtered_lang_en_train.tsv")
+    val_df = load_crisisbench("./data/crisisbench/all_data_en/crisis_consolidated_humanitarian_filtered_lang_en_dev.tsv")
+    test_df = load_crisisbench("./data/crisisbench/all_data_en/crisis_consolidated_humanitarian_filtered_lang_en_test.tsv")
 
     print(train_df.head())
     print(val_df.head())
