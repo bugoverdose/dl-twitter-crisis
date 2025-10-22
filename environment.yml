@@ -20,6 +20,7 @@ dependencies:
   - scikit-learn
   - matplotlib
   - tqdm
+  - nltk
   - pyyaml
   - jupyter # run `jupyter notebook xxx.ipynb`
   - pip
