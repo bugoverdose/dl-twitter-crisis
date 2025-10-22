@@ -1,7 +1,7 @@
 name: crisisbench-dl
 channels:
   - pytorch
-  - nvidia      # Optional: enables easy CUDA installs (Linux/Windows with NVIDIA GPU)
+  - nvidia      # Optional: enables easy CUDA installs (Linux/Windows with NVIDIA GPU). exclude for MacOS.
   - conda-forge
   - defaults
 dependencies:
@@ -21,6 +21,7 @@ dependencies:
   - matplotlib
   - tqdm
   - pyyaml
+  - jupyter # run `jupyter notebook xxx.ipynb`
   - pip
   - pip:
       - transformers>=4.44
