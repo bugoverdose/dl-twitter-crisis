@@ -22,6 +22,8 @@ dependencies:
   - tqdm
   - nltk
   - pyyaml
+  - jpeg
+  - libjpeg-turbo
   - jupyter # run `jupyter notebook xxx.ipynb`
   - pip
   - pip:

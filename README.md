@@ -16,7 +16,7 @@
 
 ## Turkey and Syria Earthquake Tweets
 
-- [Kaggle - Turkey and Syria Earthquake Tweets](https://crisisnlp.qcri.org/crisis_datasets_benchmarks)
+- [Kaggle - Turkey and Syria Earthquake Tweets](https://www.kaggle.com/datasets/swaptr/turkey-earthquake-tweets)
   - Reference: [Katalinić & Dunđer (2025)](https://www.mdpi.com/2079-9292/14/11/2273)
 
 ## CrisisBench

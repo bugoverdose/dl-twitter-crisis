@@ -1,2 +1,5 @@
 .DS_Store
 data/.DS_Store
+
+# downloaded model too heavy
+local_bert_multilingual/**
