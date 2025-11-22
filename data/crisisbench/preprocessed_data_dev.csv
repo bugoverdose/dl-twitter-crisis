@@ -623,7 +623,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 397418315129188352,2013_la_airport-shootings,crisislext26,lax suspect remains heavily sedate under guard usa today u s news amp world reportlax suspect remains heavi,en,1.0,affected_individual,time_critical
 591902975133548544,2015_nepal_earthquake,crisisnlp-cf,meet lahore the first baby born in pak army s bhaktapur field hospital,en,,not_humanitarian,non_informative
 262409070743531521,2012_sandy_hurricane-ontopic,crisislext6,is there really no dance on monday or tuesday,en,1.0,not_humanitarian,non_informative
-325035256459698177,2013_west-texas_explosion,crisislext26,,en,0.4300408363342285,sympathy_and_support,non_informative
 913915971441713152,mexico_earthquake,crisismmd,dine with us tuesday october rd and we ll donate of all sales to help earthquake victims of mexico,en,,donation_and_volunteering,support_and_relief
 908813409784930304,hurricane_harvey,crisismmd,finally got to get out and beach comb after harvey and i am stoked about my findings in limited time,en,,not_humanitarian,non_informative
 326122119677218817,2013_west_texas,crisislext6,we can just chill an kick it all night cause it feels so rightttttt,en,1.0,not_humanitarian,non_informative
@@ -961,7 +960,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 326540652504551425,2013_west_texas,crisislext6,i might sound very hypocritical in my tweets cause i smoke and now i m tryna go back to church but people could change,en,1.0,not_humanitarian,non_informative
 592818528761307136,2015_nepal_earthquake,crisisnlp-volunteers,big aftershocks in nepal could persist for years aftershocks following saturday s magnitude quake in nepal are_,en,,not_humanitarian,non_informative
 573788965142163456,2014-2015_worldwide_landslides,crisisnlp-volunteers,i always visit when i m paris it s like a secular pilgrimage to one of my favourite places,en,,not_humanitarian,non_informative
-324727180661764096,2013_west-texas_explosion,crisislext26,,en,1.0,sympathy_and_support,non_informative
 369620632499003393,2013_manila_floods,crisislext26,safety for everyone affected by tiyay and fine weather we have here in negros,en,0.9463465213775636,sympathy_and_support,non_informative
 350153963833786369,2013_alberta_floods-ontopic,crisislext6,a few minutes later they reentered camp walking slowly javon and his core group of troopers faced rejoined an,en,1.0,not_humanitarian,non_informative
 326024485478215680,2013_west_texas,crisislext6,what do you get when you put lawyers in a room with lesbians,en,1.0,not_humanitarian,non_informative
@@ -2203,7 +2201,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 336487848570155008,2013_oklahoma_tornado-ontopic,crisislext6,oh my fucking god leave me the fuck alone,en,1.0,not_humanitarian,non_informative
 541158218479579136,2014_philippines_typhoon-hagupit,crisisnlp-volunteers,consolacion evacuees provided food packs by lgu recoreda continuously done urging ppl in coastal areas evacuate,en,,response_efforts,support_and_relief
 25489,disaster_events,drd-figureeight-multimedia,national e erts in infrastructure damage assessment six weeks,en,1.0,infrastructure_and_utilities_damage,time_critical
-389959085199986689,2013_bohol_earthquake,crisislext26,,en,0.3110848367214203,sympathy_and_support,non_informative
 588927193415229441,disaster_events,aidr_system,sorry that i haven t been online the past few days not going to get into it but i hope that those that know me know i m praying yemen,en,,sympathy_and_support,non_informative
 592178505141522432,2015_nepal_earthquake,crisisnlp-volunteers,in contrast headlines with nepal quake relief drive intensifies,en,,response_efforts,support_and_relief
 592074294190014464,2015_nepal_earthquake,crisisnlp-volunteers,my deepest goes out to everyone,en,,sympathy_and_support,non_informative
@@ -2655,7 +2652,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 325042266882338816,2013_boston_bombings-ontopic,crisislext6,i don t have your number but meeee,en,1.0,not_humanitarian,non_informative
 591917639850655744,2015_nepal_earthquake,crisisnlp-volunteers,seeing photos destroyed buildings you spent months around is hard beyond words no money for aid either life is not fair,en,,sympathy_and_support,non_informative
 21049,disaster_events,drd-figureeight-multimedia,she said the agency feared that there will outbreaks of dysentery diarrhoea malaria and bilharzia in an area where children have been swimming in the floodwaters amidst human and animal waste,en,1.0,requests_or_needs,support_and_relief
-451188369448374273,2014_chile_earthquake,crisisnlp-cf,,en,0.2986026704311371,sympathy_and_support,non_informative
 911633523907416064,mexico_earthquake,crisismmd,felt in city citizens evacuate onto streets photos videos,en,,affected_individual,time_critical
 351758677679681536,2013_alberta_floods-ontopic,crisislext6,what s wrong with the mind of raptors head derozan for old players,en,1.0,not_humanitarian,non_informative
 503644132137762816,2014_california_earthquake,crisisnlp-cf,norcal rattled by largest quake to hit bay area since overnight quake causes significant damage in napa county,en,,infrastructure_and_utilities_damage,time_critical
@@ -3924,7 +3920,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 401914613211488256,2013_phillipines_typhoon-yolanda,crisislext26,skyline aglow to show support for following typhoon,en,0.9893609881401062,donation_and_volunteering,support_and_relief
 220244903735738368,2012_colorado_wildfires,crisislext26,wed night wednesday night mostly cloudy low around southwest wind to mph be safe amp smart,en,1.0,not_humanitarian,non_informative
 326702133468614656,2013_west_texas,crisislext6,your bodys my party lets get it started,en,1.0,not_humanitarian,non_informative
-382814365323247617,2013_pakistan_earthquake,crisisnlp-cf,,en,0.2853887975215912,not_humanitarian,non_informative
 263098325488783361,2012_sandy_hurricane-ontopic,crisislext6,ouch i think she s just very talented haha i m not watching anything bc i have no tv or internet connection,en,1.0,not_humanitarian,non_informative
 351403629787348992,2013_alberta_floods-ontopic,crisislext6,yes great canadian band,en,1.0,not_humanitarian,non_informative
 324667623365292032,2013_west_texas,crisislext6,one good decision leads to another,en,1.0,not_humanitarian,non_informative
@@ -4719,7 +4714,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 275872460346384384,2012_philippines_typhoon-pablo,crisislext26,water level of cdo river carmen bridge station is rising very fast,en,1.0,caution_and_advice,time_critical
 541724001123311616,2014_philippines_typhoon-hagupit,crisisnlp-volunteers,we are currently putting together a video and image gallery of typhoon hagupit please share any photos you may have with us robert,en,,not_humanitarian,non_informative
 451189550262394881,2014_chile_earthquake,crisisnlp-cf,there s been some chaos going on around the world please keep those affected in your thoughts amp prayers __f,en,1.0,sympathy_and_support,non_informative
-400618808152702976,2013_phillipines_typhoon-yolanda,crisislext26,,en,1.0,donation_and_volunteering,support_and_relief
 396360067085119488,2013_la_airport-shootings,crisislext26,huge traffic backup after,en,1.0,infrastructure_and_utilities_damage,time_critical
 326904355062169601,2013_west_texas,crisislext6,i want all of you forever you and me every day,en,1.0,not_humanitarian,non_informative
 580247409831202817,2014-2015_worldwide_landslides,crisisnlp-volunteers,quote with your best selfie_,en,,not_humanitarian,non_informative
@@ -5050,7 +5044,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 575771160123568129,2015_vanuatu_cyclone,crisisnlp-cf,great story people with chainsaw quals helping with disaster cleanup in vanuatu,en,,donation_and_volunteering,support_and_relief
 349259219284934656,2013_alberta_floods-ontopic,crisislext6,never tell your mate to stop doing things they enjoy doing that make them happy when you re around,en,1.0,not_humanitarian,non_informative
 217823733371502592,2012_colorado_wildfires,crisislext26,lord please bring rain upon colorado so these fire would stop and folks would stop losing there homes everyone please pray for denver,en,1.0,sympathy_and_support,non_informative
-451187914794622976,2014_chile_earthquake,crisisnlp-cf,,en,0.3697929382324219,sympathy_and_support,non_informative
 296574210195718145,2013_queensland_floods-ontopic,crisislext6,i have football training tomorrow night i might try and head down before,en,1.0,not_humanitarian,non_informative
 338746141527134209,2013_oklahoma_tornado-ontopic,crisislext6,i m at woodbridge restaurant oklahoma city ok,en,1.0,not_humanitarian,non_informative
 644354277670961152,disaster_events,aidr_system,damn thats like the rd one this past years,en,,not_humanitarian,non_informative
@@ -5066,7 +5059,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 3013,disaster_events,drd-figureeight-multimedia,where can we find water we are at delmas in the water treatment plant named eacra,en,1.0,requests_or_needs,support_and_relief
 906339619381399553,hurricane_harvey,crisismmd,relief continues for survivors of hurricane harvey an initiative led by young people so admirable a,en,,donation_and_volunteering,support_and_relief
 451188923038175232,2014_chile_earthquake,crisisnlp-cf,update new earthquake in chile prompts tsunami alerts santiago april reuters a powerful magnitud,en,1.0,caution_and_advice,time_critical
-488252326516637696,2014-2015_worldwide_landslides,crisisnlp-volunteers,,en,,not_humanitarian,non_informative
 573796309938880512,2014-2015_worldwide_landslides,crisisnlp-volunteers,day here we go wearing white shirt skirt bag and _,en,,not_humanitarian,non_informative
 295817501726605314,2013_queensland_floods-ontopic,crisislext6,security box maxi lock helensvale,en,1.0,not_humanitarian,non_informative
 541900331597058048,2014_philippines_typhoon-hagupit,crisisnlp-volunteers,classes are all suspended tomorrow keep safe __f,en,,not_humanitarian,non_informative
@@ -6715,11 +6707,9 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 21136,disaster_events,drd-figureeight-multimedia,luckily we haven t had any major outbreaks yet but emergeny responses are being prepared said seija tyrninoksa head of the international federation of red cross and red crescent office,en,1.0,requests_or_needs,support_and_relief
 541551881873416194,2014_philippines_typhoon-hagupit,crisisnlp-volunteers,network updates good to know,en,,not_humanitarian,non_informative
 12548,disaster_events,drd-figureeight-multimedia,i am a licensed teacher i am licensed in cpr i can tutor cook p u help with building hand out food drinks blankets organize food drives organize volunteer groups and organize and conduct fundraising if needed,en,1.0,requests_or_needs,support_and_relief
-369643667612372992,2013_manila_floods,crisislext26,,en,1.0,sympathy_and_support,non_informative
 324550551851372544,2013_boston_bombings-ontopic,crisislext6,ma e erience designer at mullen,en,1.0,not_humanitarian,non_informative
 1055808725783662593,disaster_events,aidr_system,anyone up for a jumble sale we ve got one lined up in for november th all proceeds of course to,en,,not_humanitarian,non_informative
 263342258735177730,2012_sandy_hurricane-ontopic,crisislext6,this is truly the struggle,en,1.0,not_humanitarian,non_informative
-396446650094202880,2013_la_airport-shootings,crisislext26,,en,1.0,sympathy_and_support,non_informative
 263117229502128128,2012_sandy_hurricane-ontopic,crisislext6,twitter tip add hurricane hashtags to all tweets regardless of relevance ex leaders walk the talk all the time,en,1.0,not_humanitarian,non_informative
 488995171254550528,disaster_events,aidr_system,glenda come at me bro,en,,not_humanitarian,non_informative
 920463405508677633,california_wildfires,crisismmd,young gets new legs,en,,not_humanitarian,non_informative
@@ -6984,7 +6974,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 337725437654474752,2013_oklahoma_tornado-ontopic,crisislext6,xanax and zanex na just ignorance,en,1.0,not_humanitarian,non_informative
 540016261334581248,2014_philippines_typhoon,crisisnlp-cf,praying for our nation lord protect us from this typhoon in jesus name,en,0.987305760383606,sympathy_and_support,non_informative
 323771493735620608,2013_boston_bombings-ontopic,crisislext6,i just swallowed my contact i was trying to clean it like a cat,en,1.0,not_humanitarian,non_informative
-461056420772052993,2014_middle-east_respiratory-syndrome,crisisnlp-volunteers,,en,,not_humanitarian,non_informative
 928688606679617536,hurricane_maria,crisismmd,happy birthday leo d a love you from puerto rico,en,,not_humanitarian,non_informative
 642057787925663744,disaster_events,aidr_system,want to work in ct view our latest opening,en,,not_humanitarian,non_informative
 908019661543002112,hurricane_harvey,crisismmd,houston home sales plunged percent in august as harveyapproached,en,,infrastructure_and_utilities_damage,time_critical
@@ -7356,7 +7345,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 324356595150618624,2013_boston_bombings-ontopic,crisislext6,i can t wait to see the great gatsby,en,1.0,not_humanitarian,non_informative
 324897100611588097,2013_boston_bombings-ontopic,crisislext6,make way for ducklings still in their easter bonnets boston public garden,en,1.0,not_humanitarian,non_informative
 906203773936312321,hurricane_harvey,crisismmd,harvey wont help flagging housing market,en,,not_humanitarian,non_informative
-323880942081040384,2013_boston_bombings,crisislext26,,en,1.0,sympathy_and_support,non_informative
 239566061593325568,2012_venezuela_refinery-explosion,crisislext26,my thoughts amp prayers go out to all the families affected by the refinery e losion in amuay falcn venezuela,en,1.0,sympathy_and_support,non_informative
 233180565111709698,2012_philipinnes_floods,crisislext26,the following schools are now accepting donations ua amp ateneo lsgh dlsz up ust letran dlsu adamson san beda amp enderun,en,0.9443889260292052,donation_and_volunteering,support_and_relief
 541732332621664256,2014_philippines_typhoon-hagupit,crisisnlp-volunteers,are you ready philippines always ready,en,,not_humanitarian,non_informative
@@ -8263,7 +8251,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 726435026515181568,disaster_events,aidr_system,iraqi protesters tell me they don t care about victories on isis they care now about their livelihoods medicine and food their children,en,,requests_or_needs,support_and_relief
 451189529320632320,2014_chile_earthquake,crisisnlp-cf,massive reads causing widespread warnings prayers to the continent and country,en,1.0,sympathy_and_support,non_informative
 262803672868737024,2012_sandy_hurricane-ontopic,crisislext6,watching a movie called electra or elektra idk how to spell it but this movie fucking sucks,en,1.0,not_humanitarian,non_informative
-390380122051579904,2013_bohol_earthquake,crisislext26,,en,0.958313286304474,sympathy_and_support,non_informative
 909751620514148354,hurricane_irma,crisismmd,hurricane irma fundraiser virgin islandhibiscus,en,,donation_and_volunteering,support_and_relief
 503972775933915136,2014_iceland_volcano,crisisnlp-volunteers,justin timberlake mirror iceland,en,,not_humanitarian,non_informative
 575796582328590338,2015_vanuatu_cyclone,crisisnlp-cf,australia avoids worst of cyclone nathan a strong cyclone swept ashore in northeastern australia fr via,en,,not_humanitarian,non_informative
@@ -8806,7 +8793,6 @@ id,event,source,text,lang,lang_conf,class_label,class_label_group
 876386158309236737,srilanka_floods,crisismmd,aphrodite born on the waves antonio mora,en,,not_humanitarian,non_informative
 726430425510502401,disaster_events,aidr_system,britain no immediate threat from isis in libya al arabiya,en,,not_humanitarian,non_informative
 243399592530563073,2012_costa-rica_earthquake,crisislext26,holy shit a quake in costa rica unbelievable would have never e ected any sort of extreme fault activity in that region,en,1.0,sympathy_and_support,non_informative
-1055775559400087552,disaster_events,aidr_system,,en,,not_humanitarian,non_informative
 905897470315696130,hurricane_harvey,crisismmd,eyewitness harvey working class rescue govt neglect,en,,donation_and_volunteering,support_and_relief
 591906203543830529,2015_nepal_earthquake,crisisnlp-volunteers,tourists from hyderabad and from guntur in all safe,en,,missing_and_found_people,time_critical
 451189411753910272,2014_chile_earthquake,crisisnlp-cf,for all the people who lost their loved ones don t loose hope and stay strong god will never leave you_,en,1.0,sympathy_and_support,non_informative

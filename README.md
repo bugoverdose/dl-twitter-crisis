@@ -14,37 +14,6 @@
 
 # Datasets
 
-## Disasters on social media
-
-- [Kaggle - Disasters on social media](https://www.kaggle.com/datasets/jannesklaas/disasters-on-social-media)
-  - [downloaded](./data/disasters_on_social_media/socialmedia-disaster-tweets-DFE.csv)
-  - 12266 rows
-
-- Related Paper
-  - [Bhere et al. (2020). Classifying Informatory Tweets during Disaster Using Deep Learning](https://www.researchgate.net/publication/343284810_Classifying_Informatory_Tweets_during_Disaster_Using_Deep_Learning)
-
-## Disaster Tweets
-
-- [Kaggle - Disaster Tweets](https://www.kaggle.com/datasets/vstepanenko/disaster-tweets)
-  - [downloaded](./data/disaster_tweets/tweets.csv)
-  - The file contains over 11,000 tweets associated with disaster keywords like “crash”, “quarantine”, and “bush fires” as well as the location and keyword itself.
-  - The data structure was inherited from Disasters on social media
-
-- Related Paper
-  - [Emotions-Based Disaster Tweets Classification: Real or Fake](https://wseas.com/journals/isa/2023/a685109-017(2023).pdf)
-
-## Natural Language Processing with Disaster Tweets
-
-- [Kaggle - Natural Language Processing with Disaster Tweets](https://www.kaggle.com/c/nlp-getting-started/data)
-
-- Related Paper
-  - [Balakrishnan et al. (2022). A Comprehensive Analysis of Transformer-Deep Neural Network Models in Twitter Disaster Detection](https://www.mdpi.com/2227-7390/10/24/4664)
-
-## Turkey and Syria Earthquake Tweets
-
-- [Kaggle - Turkey and Syria Earthquake Tweets](https://www.kaggle.com/datasets/swaptr/turkey-earthquake-tweets)
-  - Reference: [Katalinić & Dunđer (2025)](https://www.mdpi.com/2079-9292/14/11/2273)
-
 ## CrisisBench
 
 - [CrisisNLP - CrisisBench](https://crisisnlp.qcri.org/crisis_datasets_benchmarks) v1.0: Benchmarking Crisis-related Social Media Datasets for Humanitarian Information Processing
@@ -78,6 +47,37 @@
 
 - can probably just use `*_humanitarian.tsv` files inside `all_data_en` since we can just focus on English. Datasets within the folder are also already split into train/val/test sets
   - this is also the dataset the authors of the CrisisBench paper use in Section 4: Experiments (Alam et al., 2021).
+
+## Disasters on social media
+
+- [Kaggle - Disasters on social media](https://www.kaggle.com/datasets/jannesklaas/disasters-on-social-media)
+  - [downloaded](./data/disasters_on_social_media/socialmedia-disaster-tweets-DFE.csv)
+  - 12266 rows
+
+- Related Paper
+  - [Bhere et al. (2020). Classifying Informatory Tweets during Disaster Using Deep Learning](https://www.researchgate.net/publication/343284810_Classifying_Informatory_Tweets_during_Disaster_Using_Deep_Learning)
+
+## Disaster Tweets
+
+- [Kaggle - Disaster Tweets](https://www.kaggle.com/datasets/vstepanenko/disaster-tweets)
+  - [downloaded](./data/disaster_tweets/tweets.csv)
+  - The file contains over 11,000 tweets associated with disaster keywords like “crash”, “quarantine”, and “bush fires” as well as the location and keyword itself.
+  - The data structure was inherited from Disasters on social media
+
+- Related Paper
+  - [Emotions-Based Disaster Tweets Classification: Real or Fake](https://wseas.com/journals/isa/2023/a685109-017(2023).pdf)
+
+## Natural Language Processing with Disaster Tweets
+
+- [Kaggle - Natural Language Processing with Disaster Tweets](https://www.kaggle.com/c/nlp-getting-started/data)
+
+- Related Paper
+  - [Balakrishnan et al. (2022). A Comprehensive Analysis of Transformer-Deep Neural Network Models in Twitter Disaster Detection](https://www.mdpi.com/2227-7390/10/24/4664)
+
+## Turkey and Syria Earthquake Tweets
+
+- [Kaggle - Turkey and Syria Earthquake Tweets](https://www.kaggle.com/datasets/swaptr/turkey-earthquake-tweets)
+  - Reference: [Katalinić & Dunđer (2025)](https://www.mdpi.com/2079-9292/14/11/2273)
 
 # Papers
 
