@@ -11,7 +11,7 @@ dependencies:
   # - pytorch
   # - pytorch-cuda=12.1
   # CPU-only (portable): uncomment the next 2 lines instead
-  - pytorch
+  - pytorch=2.6
   - cpuonly
   - torchvision
   - torchaudio
@@ -31,3 +31,5 @@ dependencies:
       - accelerate
       - evaluate
       - datasets
+      - protobuf
+      - sentencepiece
