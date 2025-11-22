@@ -1,7 +1,7 @@
 name: crisisbench-dl
 channels:
   - pytorch
-  - nvidia      # Optional: enables easy CUDA installs (Linux/Windows with NVIDIA GPU). exclude for MacOS.
+  # - nvidia      # Optional: enables easy CUDA installs (Linux/Windows with NVIDIA GPU). exclude for MacOS.
   - conda-forge
   - defaults
 dependencies:
