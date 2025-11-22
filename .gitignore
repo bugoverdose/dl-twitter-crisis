@@ -5,3 +5,5 @@ data/crisisbench/glove_word_embeddings.txt
 # downloaded model too heavy
 local_bert_multilingual/**
 deberta
+
+.ipynb_checkpoints
