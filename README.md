@@ -9,8 +9,9 @@
 2. update existing conda env: `conda env update -f environment.yml`
 3. conda activate crisisbench-dl
 
-- Google Colab version (Jade): `anomaly_detection.ipynb`
-- Local Run version (Jinwoo): `anomaly_detection_local.ipynb`
+- Notebook to handle preprocessing data: `crisis_bench_preprocess.ipynb`
+- Notebook to handle TextCNN (Jade): `crisis_bench_jade.ipynb`
+- Notebook to handle Transformers (Jinwoo): `crisis_bench_jinwoo.ipynb`
 
 # Datasets
 
