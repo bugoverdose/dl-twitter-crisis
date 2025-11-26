@@ -7,6 +7,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{placeins}
+\usepackage{csvsimple}
 
 % Include other packages here, before hyperref.
 
@@ -63,36 +64,31 @@ Jade Kim\\
 
 % \textit{(5 points) What did you try to do? What problem did you try to solve? Articulate your objectives using absolutely no jargon.}
 
-In the event of a disaster, social media platforms such as Twitter (now known as X) serve as critical channels for real-time information. Time-critical information, such as reports of injured or trapped people, is essential for formal organizations seeking to minimize human casualties. Information about needs for food, water, or medical support is also valuable for both organizations and individuals who aim to provide appropriate support to survivors. However, it is challenging and time-consuming to identify such useful information within the flood of messages, as it is mixed with irrelevant or non-actionable content.
+In the event of a disaster, social media platforms such as Twitter (now known as X) serve as critical channels for real-time information. Time-critical information, such as reports of injured or trapped people, is essential for formal organizations seeking to minimize human casualties. Information about needs for food, water, or medical support is also valuable for both organizations and individuals who aim to provide appropriate assistance to survivors. However, it is challenging and time-consuming to identify such useful information within the flood of messages, as it is mixed with irrelevant or non-actionable content.
 
-The objective of this research is to address this issue by developing a deep learning based classification system designed to effectively filter and classify meaningful information within disaster-related tweets. Specifically, we defined a custom multi-class classification task with three classes based on how each tweet can be used during disasters. Tweets that convey information needed for handling urgent incidents where immediate action should be taken (e.g., reports of injured people or infrastructure damage) should be classified as \textbf{time-critical} class. Tweets that convey information useful for helping the rescued or evacuated survivors should be classified as \textbf{support-and-relief} class. All the other tweets that doesn't contain any useful information (e.g., random stranger's reaction on the disaster) should be classified as the \textbf{non-informative} class. Various deep learning models were trained to solve this task.
-
-% Specifically, we redefine the classification task by selecting \textbf{three core labels} from the 11 original humanitarian categories in the CrisisBench dataset \cite{CrisisBenchPaper} that are most essential for immediate disaster response. We then compare the performance of three distinct DL architectures (TextCNN with GloVe, a custom transformer, and a pretrained transformer) to determine which model is most effective for this task.
+The objective of this research is to address this issue by developing a deep learning-based classification system designed to effectively filter and categorize meaningful information within disaster-related tweets. Specifically, we define a multi-class classification task with three categories based on how each tweet can be utilized during disasters. Tweets that convey information needed for handling urgent incidents requiring immediate action (e.g., reports of injured people or infrastructure damage) are labeled as the \textbf{time-critical} class. Tweets containing information useful for assisting rescued or evacuated survivors are labeled as the \textbf{support-and-relief} class. Tweets that do not contain any actionable or relevant information (e.g., a random bystander’s reaction to the disaster) fall under the \textbf{non-informative} class. To this end, multiple deep learning models with different architectures were trained to classify tweets into these three defined categories.
 
 \subsection{Current Practice}
 % \subsection{Current Practice and Limitations}
 % \textit{(5 points) How is it done today, and what are the limits of current practice?}
 
-Current disaster information gathering often relies on simple keyword and hashtag searching. As pointed out by Wiegmann et al. \cite{Wiegmann2020}, this approach is prone to failure because disaster-related terminology is often diverse and ambiguous, and user-chosen descriptive terms (such as hashtags) are frequently inconsistent or incorrect. Moreover, many disaster-indicating words also occur in non-disaster contexts, making purely keyword-based filtering unreliable.
+Current disaster information gathering often relies on simple keyword and hashtag searching. As pointed out by Wiegmann et al. \cite{Wiegmann2020}, this approach is prone to failure because disaster-related terminology is often diverse and ambiguous. Moreover, many disaster-indicating words also occur in non-disaster contexts, making purely keyword-based filtering unreliable.
 
-A major limitation of this approach is \emph{information overload}, where critical, actionable messages (e.g., ``I'm trapped under a building'') can be buried by non-essential or emotional messages (e.g., ``thoughts and prayers''). Consequently, detecting disaster-related messages is now commonly modeled as a \emph{classification} task, tackled with machine learning and, increasingly, deep learning models that can capture richer semantic patterns than simple keyword filters.
+Consequently, detecting disaster-related messages is now commonly modeled as a \emph{classification} task tackled with machine learning and, increasingly, deep learning models that can capture richer semantic patterns than simple keyword filters.
 
-\textit{(5 points) Who cares? If you are successful, what difference will it make?}
+% \textit{(5 points) Who cares? If you are successful, what difference will it make?}
 
-If successful, such a classification system could significantly benefit \textbf{emergency responders}, such as 119 operators and on-site rescue teams, by rapidly surfacing critical, actionable intelligence and reducing the chance that urgent calls for help are buried under less relevant content. Ultimately, this can improve situational awareness, increase response efficiency, and potentially reduce casualties.
+This classification system significantly benefit \textbf{emergency responders}, such as 119 operators and on-site rescue teams, by rapidly surfacing critical, actionable intelligence and reducing the chance that urgent calls for help are buried under less relevant content. Ultimately, this can improve situational awareness, increase response efficiency, and potentially reduce casualties.
 
 \subsection{Dataset}
-(5 points) What data did you use? Provide details about your data, specifically choose the most important aspects of your data mentioned \href{https://arxiv.org/abs/1803.09010}{here}. You don’t have to choose all of them, just the most relevant.\\ 
-
-This study utilizes the \textbf{CrisisBench} dataset~\cite{CrisisBenchPaper}, which serves as a major benchmark for crisis classification research. As detailed in the original paper (available at \url{https://arxiv.org/pdf/2004.06774}), the dataset comprises tweets collected from various crisis situations and classifies the information into 11 categories based on humanitarian needs.
-The data exhibits characteristics typical of social media text: it is short, informal, and noisy. It also contains misspellings, emojis, and non-standard language. Furthermore, it presents \textbf{label imbalance} (e.g., ``sympathy \& support'' is often more frequent than categories like ``missing/people''). Following the guidelines from \emph{Datasheets for Datasets}~\cite{DatasheetsPaper}, we document key aspects of the dataset (motivation, composition, collection process, recommended uses) and make explicit preprocessing decisions.
+%(5 points) What data did you use? Provide details about your data, specifically choose the most important aspects of your data mentioned \href{https://arxiv.org/abs/1803.09010}{here}. You don’t have to choose all of them, just the most relevant.
+This study uses the \textbf{CrisisBench} dataset~\cite{CrisisBenchPaper} which serves as a major benchmark for crisis classification research. As detailed in the original paper, the dataset comprises tweets collected from various crisis situations and classifies the information into 11 categories based on humanitarian needs. The data exhibits characteristics typical of social media text: it is short, informal, and noisy. It also contains misspellings, emojis, and non-standard language. Following the guidelines from \emph{Datasheets for Datasets}~\cite{DatasheetsPaper}, we document key aspects of the dataset (motivation, composition, collection process, recommended uses).
 \subsubsection{Dataset Size}
 The CrisisBench dataset was constructed by consolidating eight pre-existing crisis-related Twitter datasets. The initial merge resulted in a total of \textbf{206,411 tweets} before any mapping or filtering was applied. After performing class-label harmonization and removing duplicates, the authors obtained:
 \begin{itemize}
     \item \textbf{166,098 tweets} for the \textbf{informativeness} classification task, and
     \item \textbf{141,533 tweets} for the \textbf{humanitarian} classification task.
 \end{itemize}
-
 For the main experiments conducted in the original study, which used only English-language tweets, the dataset size was further reduced to:
 \begin{itemize}
     \item \textbf{156,899 English tweets} for informativeness, and
@@ -162,26 +158,20 @@ By comparing these models, we aim to identify the architecture that offers the b
     \caption{CNN Architecture}
     \label{fig:cnn_flowchart}
 \end{figure}
+
 \subsubsection{Architecture}
 Our TextCNN model follows the architecture proposed in the original CrisisBench paper, adapted for our three-class classification task. TextCNN is particularly well suited for short, noisy text such as tweets because it captures local patterns such as short phrases indicative of urgent events through convolutional filters of different sizes. The model starts with an embedding layer initialized with pre-trained GloVe word embeddings (50-dimensional), followed by multiple parallel 1D convolutional layers with filter sizes of 3, 4, and 5 to capture n-gram features at different scales (refer to Figure~\ref{fig:cnn_flowchart}). Each convolutional layer uses 50 filters and applies ReLU activation, followed by max pooling over the sequence length. The outputs from all filter sizes are concatenated and passed through a dropout layer (dropout rate 0.5) before a fully connected layer that produces logits for the three classes (time\_critical, support\_and\_relief, non\_informative). The model uses a vocabulary size of 5000 and a maximum sequence length of 64 tokens.
-
 \subsubsection{Hyperparameter Tuning}
 We performed hyperparameter tuning to identify the optimal configuration for our TextCNN model. The hyperparameters that led to the best test F1 score (0.8237) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 64, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_curves}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text. Additional tuning experiments are included in the repository under \texttt{textcnn\_tuning\_5epochs} and \texttt{textcnn\_tuning\_10epochs}.
-
 \subsubsection{Learning and Validation Curves}
-We plotted learning curves tracking both loss and macro F1 score across training epochs for both training and validation sets which is shown in Figure~\ref{fig:cnn_curves}. The curves show consistent improvement over 5 epochs, with the validation F1 score reaching 0.8245 at epoch 5. We also generated a validation curve by varying the number of filters while keeping other hyperparameters fixed, which helped us identify the optimal number of filters (50) for our model architecture. 
+We plotted learning curves tracking both loss and macro F1 score across training epochs for both training and validation sets which is shown in Figure~\ref{fig:cnn_curves}. The curves show consistent improvement over 5 epochs, with the validation F1 score reaching 0.8245 at epoch 5. We also generated a validation curve by varying the number of filters while keeping other hyperparameters fixed, which helped us identify the optimal number of filters (50) for our model architecture. This observation reinforces that moderate-capacity CNNs are better suited for short-text classification, where excessively wide convolutional layers tend to memorize local token combinations rather than generalize.
+Overall, the learning behavior demonstrates that TextCNN is stable, efficient to train, and capable of capturing the discriminative structure necessary for triage-focused disaster tweet classification.
 \begin{figure}
     \centering
-    \includegraphics[width=1.0  \linewidth]{cnn_curves.png}
+    \includegraphics[width=1.0\linewidth]{cnn_curves.png}
     \caption{CNN Learning and Validation Curves}
     \label{fig:cnn_curves}
 \end{figure}
-
-\subsubsection{Architecture}
-
-\subsection{Hyperparameter Tuning}
-
-\subsubsection{Learning and Validation Curve}
 
 \subsection{Custom Transformer}
 
