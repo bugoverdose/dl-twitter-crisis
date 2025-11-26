@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{placeins}
 
 % Include other packages here, before hyperref.
 
@@ -57,59 +58,13 @@ Jade Kim\\
 %%%%%%%%% BODY TEXT
 \section{Introduction/Background/Motivation}
 
-\subsection{Motivation and Objectives}
-(5 points) What did you try to do? What problem did you try to solve? Articulate your objectives using absolutely no jargon. \\
-(5 points) Who cares? If you are successful, what difference will it make? \\
-In the event of a disaster, social media platforms like \textbf{Twitter (X)} serve as a critical channel for real-time information. However, these platforms suffer from a \textbf{flood of information} where useful intelligence for rescue and survivor support is mixed with \textbf{irrelevant or non-actionable content}. This mixture complicates on-the-ground response efforts.
+(5 points) What did you try to do? What problem did you try to solve? Articulate your objectives using absolutely no jargon. 
 
-The objective of this research is to address this challenge by developing a deep learning based classification system designed to \textbf{automatically filter and classify meaningful information} within disaster-related tweets. Specifically, we redefine the classification task by selecting \textbf{three core labels} from the 11 original humanitarian categories in the CrisisBench dataset~\cite{CrisisBenchPaper} that are most essential for immediate disaster response. We then compare the performance of three distinct DL architectures (TextCNN with GloVe, a custom transformer, and a pretrained transformer) to determine which model is most effective for this task.
+(5 points) How is it done today, and what are the limits of current practice?
 
-If successful, such a classification system could significantly benefit \textbf{emergency responders}, such as 119 operators and on-site rescue teams, by rapidly surfacing critical, actionable intelligence and reducing the chance that urgent calls for help are buried under less relevant content. Ultimately, this can improve situational awareness, increase response efficiency, and potentially reduce casualties.
+(5 points) Who cares? If you are successful, what difference will it make? 
 
-\subsection{Current Practice and Limitations}
-(5 points) How is it done today, and what are the limits of current practice? \\
-Current disaster information gathering often relies on simple keyword and hashtag searching. As pointed out by Wiegmann et al.~\cite{Wiegmann2020}, this approach is prone to failure because disaster-related terminology is often diverse and ambiguous, and user-chosen descriptive terms (such as hashtags) are frequently inconsistent or incorrect. Moreover, many disaster-indicating words also occur in non-disaster contexts, making purely keyword-based filtering unreliable.
-
-A major limitation of this approach is \emph{information overload}, where critical, actionable messages (e.g., ``I'm trapped under a building'') can be buried by non-essential or emotional messages (e.g., ``thoughts and prayers''). Consequently, detecting disaster-related messages is now commonly modeled as a \emph{classification} task, tackled with machine learning and, increasingly, deep learning models that can capture richer semantic patterns than simple keyword filters.
-
-\subsection{Dataset}
-(5 points) What data did you use? Provide details about your data, specifically choose the most important aspects of your data mentioned \href{https://arxiv.org/abs/1803.09010}{here}. You don’t have to choose all of them, just the most relevant.\\ 
-
-This study utilizes the \textbf{CrisisBench} dataset~\cite{CrisisBenchPaper}, which serves as a major benchmark for crisis classification research. As detailed in the original paper (available at \url{https://arxiv.org/pdf/2004.06774}), the dataset comprises tweets collected from various crisis situations and classifies the information into 11 categories based on humanitarian needs.
-The data exhibits characteristics typical of social media text: it is short, informal, and noisy. It also contains misspellings, emojis, and non-standard language. Furthermore, it presents \textbf{label imbalance} (e.g., ``sympathy \& support'' is often more frequent than categories like ``missing/people''). Following the guidelines from \emph{Datasheets for Datasets}~\cite{DatasheetsPaper}, we document key aspects of the dataset (motivation, composition, collection process, recommended uses) and make explicit preprocessing decisions.
-\subsubsection{Dataset Size}
-The CrisisBench dataset was constructed by consolidating eight pre-existing crisis-related Twitter datasets. The initial merge resulted in a total of \textbf{206,411 tweets} before any mapping or filtering was applied. After performing class-label harmonization and removing duplicates, the authors obtained:
-\begin{itemize}
-    \item \textbf{166,098 tweets} for the \textbf{informativeness} classification task, and
-    \item \textbf{141,533 tweets} for the \textbf{humanitarian} classification task.
-\end{itemize}
-
-For the main experiments conducted in the original study, which used only English-language tweets, the dataset size was further reduced to:
-\begin{itemize}
-    \item \textbf{156,899 English tweets} for informativeness, and
-    \item \textbf{87,557 English tweets} for humanitarian categories.
-\end{itemize}
-
-\subsubsection{Labeling Process}
-CrisisBench was created by integrating eight human-annotated source datasets, each containing its own labeling conventions. To construct a unified benchmark, the authors employed a manual label mapping and validation process. Key aspects of this procedure include:
-\begin{enumerate}
-    \item \textbf{Manual mapping of inconsistent labels:} Domain experts mapped semantically similar labels from different datasets into unified label clusters, ensuring consistent annotation across sources.
-    \item \textbf{Focus on two core tasks:} The harmonization was designed to support classification of (1) \emph{informativeness} (informative vs.\ not-informative) and (2) \emph{humanitarian information types} (e.g., affected individuals, infrastructure damage).
-    \item \textbf{Exclusion of non-humanitarian categories:} Labels irrelevant to crisis-response use cases were removed (e.g., ``animal management,'' ``not labeled''), reducing the number of usable tweets.
-\end{enumerate}
-
-As an example of the mapping process, the label \textit{``building damaged''} from the AIDR system was merged into the broader category \textit{``infrastructure and utilities damage''} in the final humanitarian taxonomy.
-
-\subsection{Methodology}
-In our preprocessing pipeline, we apply tokenization, lowercasing, and removal of URLs and user mentions (@username). We then restrict the dataset to the three selected humanitarian categories used in our study.
-
-We evaluate three distinct model architectures:
-\begin{enumerate}
-    \item A \textbf{TextCNN} model utilizing pre-trained \textbf{GloVe} embeddings to assess its ability to extract local n-gram style features.
-    \item A \textbf{custom transformer} model trained from scratch to capture global contextual relationships in the tweets.
-    \item A \textbf{pretrained transformer} model that is fine-tuned on our classification task, representing a transfer learning approach leveraging large-scale language pretraining.
-\end{enumerate}
-By comparing these models, we aim to identify the architecture that offers the best performance for real-time disaster information filtering under our three-label formulation.
+(5 points) What data did you use? Provide details about your data, specifically choose the most important aspects of your data mentioned \href{https://arxiv.org/abs/1803.09010}{here}. You don’t have to choose all of them, just the most relevant.\\
 
 %-------------------------------------------------------------------------
 %------------------------------------------------------------------------
@@ -122,6 +77,7 @@ By comparing these models, we aim to identify the architecture that offers the b
 (5 points) What problems did you anticipate? What problems did you encounter? Did the very first thing you tried work? 
 
 \textbf{Important: Mention any code repositories (with citations) or other sources that you used, and specifically what changes you made to them for your project. }
+\FloatBarrier
 
 \section{Experiments and Results}
 
@@ -129,16 +85,43 @@ By comparing these models, we aim to identify the architecture that offers the b
 
 \subsubsection{Architecture}
 
-\subsection{Hyperparameter Tuning}
-
 \subsubsection{Learning and Validation Curve}
 
+\FloatBarrier
 
+\subsection{Custom Transformer}
+
+\subsubsection{Architecture}
+
+\subsubsection{Fine-tuning}
+
+\FloatBarrier
+
+\subsection{Fine-tuning Pretrained Transformer}
+
+\subsubsection{Architecture}
+
+\subsubsection{Fine-tuning}
+
+\begin{figure}[h] % [t] 
+\begin{center}
+% \fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
+\includegraphics[width=1.05\linewidth]{pretrained_transformer_f1_score_curve.png}
+\includegraphics[width=1\linewidth]{pretrained_transformer_f1_score_val_curve1.png}
+\end{center}
+   \caption{Example of caption.  It is set in Roman so that mathematics
+   (always set in Roman: $B \sin A = A \sin B$) may be included without an
+   ugly clash.}
+\label{fig:long}
+\label{fig:onecol}
+\end{figure}
 
 
 (10 points) How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? Justify your reasons with arguments supported by evidence and data.
 
 \textbf{Important: This section should be rigorous and thorough. Present detailed information about decision you made, why you made them, and any evidence/experimentation to back them up. This is especially true if you leveraged existing architectures, pre-trained models, and code (i.e. do not just show results of fine-tuning a pre-trained model without any analysis, claims/evidence, and conclusions, as that tends to not make a strong project). }
+
+\FloatBarrier
 
 %-------------------------------------------------------------------------
 \section{Other Sections}
@@ -480,27 +463,7 @@ of the use of color in your document.
 
 {\small
 \bibliographystyle{ieee_fullname}
-@inproceedings{CrisisBenchPaper,
-  title={CrisisBench: Benchmarking Crisis-related Social Media Datasets},
-  author={Alam, Firoj and Ofli, Ferda and Imran, Muhammad},
-  booktitle={Proceedings of the International AAAI Conference on Web and Social Media},
-  year={2020}
-}
 
-@article{wiegmann2020,
-  title={Analysis of Detection Models for Disaster-Related Tweets},
-  author={Wiegmann, Matti and Meesters, Kenny and Comes, Timo},
-  journal={Information Systems Frontiers},
-  year={2020}
-}
-
-@article{DatasheetsPaper,
-  author={Timnit Gebru and Jamie H. Morgenstern and Brian Plötz and Emily Sheng and Angelique Taylor and Jennifer Wortman Vaughan and Hanna Wallach},
-  title={Datasheets for Datasets},
-  journal={arXiv preprint arXiv:1803.09010},
-  year={2018},
-  url={http://arxiv.org/abs/1803.09010}
-}
 \bibliography{egbib}
 }
 
