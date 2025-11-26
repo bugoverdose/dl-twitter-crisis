@@ -7,8 +7,8 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{placeins}
-\usepackage{csvsimple}
-
+\usepackage{csvsimple, booktabs}
+\csvset{latexfriendly=true}
 % Include other packages here, before hyperref.
 
 % If you comment hyperref and then uncomment it, you should delete
@@ -64,15 +64,15 @@ Jade Kim\\
 
 % \textit{(5 points) What did you try to do? What problem did you try to solve? Articulate your objectives using absolutely no jargon.}
 
-In the event of a disaster, social media platforms such as Twitter (now known as X) serve as critical channels for real-time information. Time-critical information, such as reports of injured or trapped people, is essential for formal organizations seeking to minimize human casualties. Information about needs for food, water, or medical support is also valuable for both organizations and individuals who aim to provide appropriate assistance to survivors. However, it is challenging and time-consuming to identify such useful information within the flood of messages, as it is mixed with irrelevant or non-actionable content.
+In the event of a disaster, social media platforms such as Twitter (now known as X) serve as critical channels for real-time information \cite{TwitterInCrisis}. Time-critical information, such as reports of injured or trapped people, is essential for formal organizations seeking to minimize human casualties. Information about needs for food, water, or medical support is also valuable for both organizations and individuals who aim to provide appropriate assistance to survivors. However, it is challenging and time-consuming to identify such useful information within the flood of messages, as it is mixed with irrelevant or non-actionable content.
 
-The objective of this research is to address this issue by developing a deep learning-based classification system designed to effectively filter and categorize meaningful information within disaster-related tweets. Specifically, we define a multi-class classification task with three categories based on how each tweet can be utilized during disasters. Tweets that convey information needed for handling urgent incidents requiring immediate action (e.g., reports of injured people or infrastructure damage) are labeled as the \textbf{time-critical} class. Tweets containing information useful for assisting rescued or evacuated survivors are labeled as the \textbf{support-and-relief} class. Tweets that do not contain any actionable or relevant information (e.g., a random bystander’s reaction to the disaster) fall under the \textbf{non-informative} class. To this end, multiple deep learning models with different architectures were trained to classify tweets into these three defined categories.
+The objective of this research is to address this issue by developing a deep learning-based classification system designed to effectively filter and categorize meaningful information within disaster-related tweets. Specifically, we define a multi-class classification task with three categories based on how each tweet can be utilized during disasters. Tweets that convey information needed for handling urgent incidents requiring immediate action (e.g., reports of injured people or infrastructure damage) are labeled as the \textbf{time-critical} class. Tweets containing information useful for assisting rescued or evacuated survivors are labeled as the \textbf{support-and-relief} class. Tweets that do not contain any actionable or relevant information (e.g., random online users' reaction to the disaster) fall under the \textbf{non-informative} class. To this end, multiple deep learning models with different architectures were trained to classify tweets into these three defined categories.
 
 \subsection{Current Practice}
 % \subsection{Current Practice and Limitations}
 % \textit{(5 points) How is it done today, and what are the limits of current practice?}
 
-Current disaster information gathering often relies on simple keyword and hashtag searching. As pointed out by Wiegmann et al. \cite{Wiegmann2020}, this approach is prone to failure because disaster-related terminology is often diverse and ambiguous. Moreover, many disaster-indicating words also occur in non-disaster contexts, making purely keyword-based filtering unreliable.
+Current disaster information gathering often relies on simple keyword and hashtag searching. This approach is prone to failure because disaster-related terminology is often diverse and ambiguous \cite{Wiegmann2020}. Moreover, many disaster-indicating words also occur in non-disaster contexts, making purely keyword-based filtering unreliable.
 
 Consequently, detecting disaster-related messages is now commonly modeled as a \emph{classification} task tackled with machine learning and, increasingly, deep learning models that can capture richer semantic patterns than simple keyword filters.
 
@@ -89,7 +89,7 @@ The CrisisBench dataset was constructed by consolidating eight pre-existing cris
     \item \textbf{166,098 tweets} for the \textbf{informativeness} classification task, and
     \item \textbf{141,533 tweets} for the \textbf{humanitarian} classification task.
 \end{itemize}
-For the main experiments conducted in the original study, which used only English-language tweets, the dataset size was further reduced to:
+For the main experiments conducted in the original study which used only English-language tweets, the dataset size was further reduced to:
 \begin{itemize}
     \item \textbf{156,899 English tweets} for informativeness, and
     \item \textbf{87,557 English tweets} for humanitarian categories.
@@ -131,11 +131,11 @@ Preprocessing Pipeline:
     \item Restriction to the three selected humanitarian categories used in our study.
 \end{itemize}
 \subsection{What's New in Our Approach?}
-The main novelty in our approach is not in the individual cleaning steps, but in the re-framing of the CrisisBench classification task itself, moving from a research-oriented 11-class problem to a triage-centric 3-class problem (time\_critical, support\_and\_relief, non\_informative), which prioritizes immediate operational utility for disaster response.
+The main novelty in our approach is not in the individual cleaning steps, but in the re-framing of the CrisisBench classification task itself, moving from a 11-class problem to a triage-centric 3-class problem (time\_critical, support\_and\_relief, non\_informative), which prioritizes immediate operational utility for disaster response.
 We anticipated success because:
 \begin{itemize}
-    \item Target Simplification:Reducing the 11 original, highly granular labels to three operationally relevant super-classes directly addresses the challenge of building an actionable, real-time triage system. This simplification aligns with the primary goal of surfacing only the most critical humanitarian information during disasters.
-    \item Standardized Cleaning: The implemented text-cleaning steps (removal of URLs, hashtags, user mentions, and non-ASCII characters) follow established best practices for natural language processing on noisy social media data. These steps help ensure that the classification models focus on the core semantic content rather than on artifacts irrelevant to humanitarian decision-making.
+    \item Target Simplification: Reducing the 11 original labels to three relevant classes directly addresses the challenge of building an actionable, real-time triage system. This simplification aligns with the primary goal of surfacing only the most critical humanitarian information during disasters.
+    \item Standardized Cleaning: The implemented text-cleaning steps (removal of URLs, hashtags, user mentions, and non-ASCII characters) follow established best practices for natural language processing on noisy social media data. These steps help ensure that the classification models focus on the core semantic content rather than those irrelevant to humanitarian decision-making.
 \end{itemize}
 \subsection{Problems}
 \textbf{TODO: ALSO TALK ABOUT PROBLEMS FACED DURING EXPERIMENTATION SUCH AS COMPUTATION LIMITS} \\
@@ -162,19 +162,25 @@ By comparing these models, we aim to identify the architecture that offers the b
 \subsubsection{Architecture}
 Our TextCNN model follows the architecture proposed in the original CrisisBench paper, adapted for our three-class classification task. TextCNN is particularly well suited for short, noisy text such as tweets because it captures local patterns such as short phrases indicative of urgent events through convolutional filters of different sizes. The model starts with an embedding layer initialized with pre-trained GloVe word embeddings (50-dimensional), followed by multiple parallel 1D convolutional layers with filter sizes of 3, 4, and 5 to capture n-gram features at different scales (refer to Figure~\ref{fig:cnn_flowchart}). Each convolutional layer uses 50 filters and applies ReLU activation, followed by max pooling over the sequence length. The outputs from all filter sizes are concatenated and passed through a dropout layer (dropout rate 0.5) before a fully connected layer that produces logits for the three classes (time\_critical, support\_and\_relief, non\_informative). The model uses a vocabulary size of 5000 and a maximum sequence length of 64 tokens.
 \subsubsection{Hyperparameter Tuning}
-We performed hyperparameter tuning to identify the optimal configuration for our TextCNN model. The hyperparameters that led to the best test F1 score (0.8237) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 64, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_curves}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text. Additional tuning experiments are included in the repository under \texttt{textcnn\_tuning\_5epochs} and \texttt{textcnn\_tuning\_10epochs}.
+We performed hyperparameter tuning to identify the optimal configuration for our TextCNN model. The hyperparameters that led to the best test F1 score (0.8237) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 64, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_curves}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text.
 \subsubsection{Learning and Validation Curves}
 We plotted learning curves tracking both loss and macro F1 score across training epochs for both training and validation sets which is shown in Figure~\ref{fig:cnn_curves}. The curves show consistent improvement over 5 epochs, with the validation F1 score reaching 0.8245 at epoch 5. We also generated a validation curve by varying the number of filters while keeping other hyperparameters fixed, which helped us identify the optimal number of filters (50) for our model architecture. This observation reinforces that moderate-capacity CNNs are better suited for short-text classification, where excessively wide convolutional layers tend to memorize local token combinations rather than generalize.
-Overall, the learning behavior demonstrates that TextCNN is stable, efficient to train, and capable of capturing the discriminative structure necessary for triage-focused disaster tweet classification.
+Overall, the learning behavior demonstrates that TextCNN is efficient and capable of capturing the structure necessary for triage-focused disaster tweet classification.
 \begin{figure}
     \centering
     \includegraphics[width=1.0\linewidth]{cnn_curves.png}
     \caption{CNN Learning and Validation Curves}
     \label{fig:cnn_curves}
 \end{figure}
+\subsubsection{Analysis of Results}
 
 \subsection{Custom Transformer}
-
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{custom_transformer_curves.png}
+    \caption{Custom Transformer Learning and Validation Curves}
+    \label{fig:custom_transformer_curves}
+\end{figure}
 \subsubsection{Architecture}
 
 \subsubsection{Fine-tuning}
@@ -210,23 +216,6 @@ Overall, the learning behavior demonstrates that TextCNN is stable, efficient to
 %-------------------------------------------------------------------------
 \section{Other Sections}
 
-\begin{table*}
-\begin{center}
-\begin{tabular}{|l|c|p{8cm}|}
-\hline
-Student Name & Contributed Aspects & Details \\
-\hline\hline
-Team Member 1 & Data Creation and Implementation & Scraped the dataset for this project and trained the CNN of the encoder. Implemented attention mechanism to improve results. \\
-Team Member 2 & Implementation and Analysis & Trained the LSTM of the encoder and analyzed the results. Analyzed effect of number of nodes in hidden state.  Implemented Convolutional LSTM. \\
-\hline
-\end{tabular}
-\end{center}
-\caption{Contributions of team members.}
-\label{tab:contributions}
-\end{table*}
-
-
-
 You are welcome to introduce additional sections or subsections, if required, to address the following questions in detail. 
 
 (5 points) Appropriate use of figures / tables / visualizations. Are the ideas presented with appropriate illustration? Are the results presented clearly; are the important differences illustrated? 
@@ -252,12 +241,59 @@ What existing code or models did you start with and what did those starting poin
 
 Briefly discuss potential future work that the research community could focus on to make improvements in the direction of your project's topic.
 
-
-%-------------------------------------------------------------------------
-
 \section{Work Division}
 
-Please add a section on the delegation of work among team members at the end of the report, in the form of a table and paragraph description. This and references do \textbf{NOT} count towards your page limit. An example has been provided in Table \ref{tab:contributions}.
+% Please add a section on the delegation of work among team members at the end of the report, in the form of a table and paragraph description. This and references do \textbf{NOT} count towards your page limit. An example has been provided in Table \ref{tab:contributions}.
+
+Summary of contributions are provided in Table \ref{tab:contributions}.
+
+{\small
+\bibliographystyle{ieee_fullname}
+\bibliography{egbib}
+}
+
+\begin{table*}
+\begin{center}
+\begin{tabular}{|l|p{8cm}|p{8cm}|} % {|l|c|p{8cm}|}
+\hline
+Student Name & Contributed Aspects & Details \\
+\hline\hline
+Jinwoo Jeong & Data Preprocessing, Transformer implementation, Training and Analysis & Preprocessed all the Tweeter data used in the project. Implemented custom transformer and fine-tuned pretrained transformer model. \\
+Jade Kim & CNN Implementation, Training and Analysis & Implemented TextCNN model. Fine-tuned TextCNN and custom transformer. Analyzed effect of number of filters in TextCNN. \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Contributions of team members.}
+\label{tab:contributions}
+\end{table*}
+
+\FloatBarrier
+
+\newpage
+
+
+
+\appendix
+
+
+% \section{CNN Hyperparameter Tuning Data}
+% \begin{table*}[t]
+% \centering
+%     \begin{tabular}{|l|l|l|l|l|l|l|l|}
+%     \hline
+%         filters & filter\_sizes & dropout & batch\_size & lr & train\_f1 & val\_f1 & test\_f1 \\ \hline
+%         50 & 3,4,5 & 0.5000 & 32 & 5e-4 & 0.8084 & 0.7950 & 0.7905 \\ \hline
+%         50 & 3,4,5 & 0.5000 & 32 & 5e-4 & 0.8701 & 0.8246 & 0.8232 \\ \hline
+%         50 & 3,4,5 & 0.7000 & 32 & 5e-4 & 0.8507 & 0.8237 & 0.8217 \\ \hline
+%         50 & 4,5,6 & 0.7000 & 32 & 5e-4 & 0.8589 & 0.8214 & 0.8193 \\ \hline
+%         100 & 3,4,5 & 0.7000 & 32 & 5e-4 & 0.8666 & 0.8216 & 0.8243 \\ \hline
+%         100 & 4,5,6 & 0.7000 & 32 & 5e-4 & 0.8711 & 0.8285 & 0.8253 \\ \hline
+%         50 & 3,4,5 & 0.7000 & 32 & 1e-3 & 0.8714 & 0.8258 & 0.8216 \\ \hline
+%         50 & 4,5,6 & 0.7000 & 32 & 1e-3 & 0.8735 & 0.8246 & 0.8197 \\ \hline
+%         100 & 3,4,5 & 0.5000 & 32 & 1e-3 & 0.8597 & 0.8253 & 0.8234 \\ \hline
+%     \end{tabular}
+%     \caption{Snippet of hyperparameter tuning values}
+% \end{table}
 
 \newpage
 \newpage
@@ -543,10 +579,5 @@ of the use of color in your document.
 %------------------------------------------------------------------------
 
 %-------------------------------------------------------------------------
-
-{\small
-\bibliographystyle{ieee_fullname}
-\bibliography{egbib}
-}
 
 \end{document}
