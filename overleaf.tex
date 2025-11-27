@@ -15,6 +15,7 @@
 % egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
 % run, let it finish, and you should be clear).
 \usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+\usepackage{multirow}
 
 \cvprfinalcopy % *** Uncomment this line for the final submission
 
@@ -57,7 +58,7 @@ Jade Kim\\
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
-\section{Introduction} 
+\section{Introduction}
 
 % (5 points) What did you try to do? What problem did you try to solve? Articulate your objectives using absolutely no jargon.
 % (5 points) How is it done today, and what are the limits of current practice?
@@ -67,43 +68,60 @@ In the event of a disaster, valuable real-time information can be found on socia
 
 Researchers have therefore built systems that analyze social media during crises. Much of this work has focused on Twitter, using it for early disaster detection, situational awareness, and extracting actionable information \cite{CrisisBenchPaper, TwitterInCrisis}. A major line of research involves tweet classification, enabled by large annotated datasets such as CrisisBench \cite{CrisisBenchPaper}, CrisisLex \cite{Crisislex}, CrisisNLP \cite{CrisisNLP}, and CrisisMMD \cite{CrisisMMD}.
 
-Twitter-based classification studies span a wide range of objectives, but many of them fall under two approaches. The first is informativeness classification, which simply distinguishes useful messages from non-useful ones. This binary classification helps filter noise, but it does not tell responders \textit{what} type of help is needed. The second approach is humanitarian category classification, which assigns tweets to detailed label types (e.g., injuries, missing persons, infrastructure damage). This is more descriptive, but can also create confusion when categories overlap or are too numerous. For example, a tweet describing an injured person trapped beneath collapsed debris fits both “injured” and “infrastructure damage,” but standard models force only one choice, which can reduce practical usability \cite{CrisisBenchPaper}.
+Twitter-based classification studies span a wide range of objectives, but many of them fall under two approaches. The first is informativeness classification, which simply distinguishes useful messages from non-useful ones. This binary classification helps filter noise, but it does not tell responders \textit{what} type of help is needed. The second approach is humanitarian category classification, which assigns tweets to detailed label types (e.g., injuries, missing persons, infrastructure damage). This is more descriptive, but can also create confusion when categories overlap or are too numerous. For example, a tweet describing an injured person trapped beneath collapsed debris fits both ``injured'' and ``infrastructure damage,'' but standard models force only one choice, which can reduce practical usability \cite{CrisisBenchPaper}.
 
-To overcome these limitations, we define a three-class classification task based on how tweets can be used during disaster response. Tweets that require immediate action (e.g., reports of injured people or infrastructure damage) should be classified as the time-critical class. Tweets useful for post-rescue aid (e.g., food, shelter, medical supply needs) fall under the support-and-relief class. Tweets that do not contain any relevant or actionable information (e.g., random online users' reactions to the disaster) are classified as non-informative.
+To overcome these limitations, we define a three-class classification task based on how tweets can be used during disaster response. Tweets that require immediate action (e.g., reports of injured people or infrastructure damage) should be classified as the \textbf{time-critical} class. Tweets useful for post-rescue aid (e.g., food, shelter, medical supply needs) fall under the \textbf{support-and-relief} class. Tweets that do not contain any relevant or actionable information (e.g., random online users' reactions to the disaster) are classified as \textbf{non-informative}.
 
 To solve this task, multiple deep learning models with different architectures were trained and fine-tuned to perform this three-way classification. We focus on convolutional neural networks (CNN) and transformer-based architectures, as they have previously demonstrated strong performance on crisis datasets \cite{CrisisBenchPaper, Wiegmann2020, Ning}.
 
 If we can successfully train such a classification system, this system will help responders identify urgent information faster, remove distracting content, and allocate resources more effectively. Time-critical posts could assist 119 dispatchers and search-and-rescue teams, while support-and-relief posts could guide donation planning, shelter distribution, and medical supply delivery. In short, this would make real-time crisis information easier to use, which can directly impact human lives.
 
 \subsection{Dataset}
+
 % (5 points) What data did you use? Provide details about your data, specifically choose the most important aspects of your data mentioned here: Datasheets for Datasets (https://arxiv.org/abs/1803.09010). Note that you do not have to choose all of them, just the most relevant.
 
-The \textbf{CrisisBench} dataset has been used \cite{CrisisBenchPaper} which serves as a major benchmark for crisis classification research. As detailed in the original paper, the dataset comprises tweets collected from various crisis situations and classifies the information into 11 categories based on humanitarian needs. The data exhibits characteristics typical of social media text: it is short, informal, and noisy. It also contains misspellings, emojis, and non-standard language. 
-Following the guidelines from \emph{Datasheets for Datasets}~\cite{DatasheetsPaper}, we document key aspects of the dataset (motivation, composition, collection process, recommended uses).
-\subsubsection{Dataset Size}
-The CrisisBench dataset was constructed by consolidating eight pre-existing crisis-related Twitter datasets. The initial merge resulted in a total of \textbf{206,411 tweets} before any mapping or filtering was applied. After performing class-label harmonization and removing duplicates, the authors obtained:
-\begin{itemize}
-    \item \textbf{166,098 tweets} for the \textbf{informativeness} classification task, and
-    \item \textbf{141,533 tweets} for the \textbf{humanitarian} classification task.
-\end{itemize}
-For the main experiments conducted in the original study which used only English-language tweets, the dataset size was further reduced to:
-\begin{itemize}
-    \item \textbf{156,899 English tweets} for informativeness, and
-    \item \textbf{87,557 English tweets} for humanitarian categories.
-\end{itemize}
+% motivation: For what purpose was the dataset created? Was there a specific task in mind? Was there a specific gap that needed to be filled? Please provide a description.
+% composition: What do the instances that comprise the dataset represent (e.g., documents, photos, people, countries)? How many instances are there in total (of each type, if appropriate)?
 
-\subsubsection{Labeling Process}
-CrisisBench was created by integrating eight human-annotated source datasets, each containing its own labeling conventions. To construct a unified benchmark, the authors employed a manual label mapping and validation process. Key aspects of this procedure include:
-\begin{enumerate}
-    \item \textbf{Manual mapping of inconsistent labels:} Domain experts mapped semantically similar labels from different datasets into unified label clusters, ensuring consistent annotation across sources.
-    \item \textbf{Focus on two core tasks:} The harmonization was designed to support classification of (1) \emph{informativeness} (informative vs.\ not-informative) and (2) \emph{humanitarian information types} (e.g., affected individuals, infrastructure damage).
-    \item \textbf{Exclusion of non-humanitarian categories:} Labels irrelevant to crisis-response use cases were removed (e.g., ``animal management,'' ``not labeled''), reducing the number of usable tweets.
-\end{enumerate}
+The CrisisBench dataset is used for this project \cite{CrisisBenchPaper}. The dataset was created to serve as a standard evaluation benchmark for crisis tweet classification, addressing the lack of unified and comparable resources in prior work, which aligns well with the goals of our classification task. By consolidating eight pre-existing crisis-related Twitter datasets (e.g., CrisisLex \cite{Crisislex}, CrisisNLP \cite{CrisisNLP}, CrisisMMD \cite{CrisisMMD}), harmonizing labels, and removing duplicates, it enables fair comparison across models and tasks. The primary goal of the dataset is to support robust, reproducible evaluation for both informativeness and humanitarian classification tasks.
 
-As an example of the mapping process, the label \textit{``building damaged''} from the AIDR system was merged into the broader category \textit{``infrastructure and utilities damage''} in the final humanitarian taxonomy.
+For our project, we use the English portion of the CrisisBench dataset for humanitarian classification task, consisting of 87,455 labeled tweets. The CrisisBench dataset defines 11 humanitarian classes by unifying semantically similar labels across multiple source datasets, merging variants with equivalent meaning (e.g., ``Infrastructure damage'' and ``Infrastructure and utilities'' unified as ``Infrastructure and utilities damage'') \cite{CrisisBenchPaper}. For our three-way classification task, these 11 classes were grouped into three higher-level categories as shown in Table \ref{tab:label_mapping}.
 
-%------------------------------------------------------------------------
-% -----------------------------------------------------------------------
+All tweets were preprocessed prior to modeling. URLs were removed because they do not provide meaningful semantic information \cite{URLRemoval}. Twitter-specific tokens such as hashtags (e.g., \#PrayForParis), usernames, and retweet markers (e.g., RT @BreakingNews) were removed. We further removed symbols, emoticons, invisible and non-ASCII characters, and punctuation, following the preprocessing strategy described in the CrisisBench paper \cite{CrisisBenchPaper}. All text was lowercased to reduce vocabulary dimensionality while maintaining semantic validity \cite{TextRemoval}. Finally, 110 tweets were discarded because they contained empty strings or duplicated content, resulting in 87,345 remaining samples. Following the original data splits provided by CrisisBench, the final dataset consisted of 61,089 training samples, 8,921 validation samples, and 17,335 test samples.
+
+\begin{table}[t]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Mapped class} & \textbf{Original CrisisBench class} \\
+\hline
+\multirow{6}{*}{time\_critical} 
+    & affected\_individual \\ \cline{2-2}
+    & caution\_and\_advice \\ \cline{2-2}
+    & displaced\_and\_evacuations \\ \cline{2-2}
+    & infrastructure\_and\_utilities\_damage \\ \cline{2-2}
+    & injured\_or\_dead\_people \\ \cline{2-2}
+    & missing\_and\_found\_people \\
+\hline
+\multirow{3}{*}{support\_and\_relief} 
+    & requests\_or\_needs \\ \cline{2-2}
+    & donation\_and\_volunteering \\ \cline{2-2}
+    & response\_efforts \\
+\hline
+\multirow{2}{*}{non\_informative} 
+    & not\_humanitarian \\ \cline{2-2}
+    & sympathy\_and\_support \\
+\hline
+\end{tabular}
+\caption{Label Mapping}
+\label{tab:label_mapping}
+\end{table}
+
+% total N =87345
+% df_train: N=61089
+% df_dev: N=8921
+% df_test: N=17335
+
 \section{Approach}
 
 (10 points) What did you do exactly? How did you solve the problem? Why did you think it would be successful? Is anything new in your approach? \\
@@ -125,14 +143,6 @@ We evaluate three distinct model architectures:
 By comparing these models, we aim to identify the architecture that offers the best performance for real-time disaster information filtering under our three-label formulation.
 
 
-\subsection{Data Preprocessing}
-Our preprocessing pipeline follows a structured set of steps designed to clean the CrisisBench dataset (\url{https://github.com/firojalam/crisis_datasets_benchmarks}) and prepare it for model training. The original dataset contains English-only humanitarian-labelled tweets in three splits (train, dev, test).
-All preprocessing steps were implemented in a dedicated Jupyter notebook. The code for this project is available at \url{https://github.com/bugoverdose/dl-twitter-crisis}. \\
-Preprocessing Pipeline:
-\begin{itemize}
-    \item Lower casing and removal of URLs, user mentions,symbols, emoticons, invisible and non-ASCII characters, punctuations (replaced with whitespace), numbers, and hashtag signs.
-    \item Restriction to the three selected humanitarian categories used in our study.
-\end{itemize}
 \subsection{What's New in Our Approach?}
 The main novelty in our approach is not in the individual cleaning steps, but in the re-framing of the CrisisBench classification task itself, moving from a 11-class problem to a triage-centric 3-class problem (time\_critical, support\_and\_relief, non\_informative), which prioritizes immediate operational utility for disaster response.
 We anticipated success because:
@@ -163,7 +173,7 @@ By comparing these models, we aim to identify the architecture that offers the b
 \end{figure}
 
 \subsubsection{Architecture}
-Our TextCNN model follows the architecture proposed in the original CrisisBench paper, adapted for our three-class classification task. TextCNN is particularly well suited for short, noisy text such as tweets because it captures local patterns such as short phrases indicative of urgent events through convolutional filters of different sizes. The model starts with an embedding layer initialized with pre-trained GloVe word embeddings (50-dimensional), followed by multiple parallel 1D convolutional layers with filter sizes of 3, 4, and 5 to capture n-gram features at different scales (refer to Figure~\ref{fig:cnn_flowchart}). Each convolutional layer uses 50 filters and applies ReLU activation, followed by max pooling over the sequence length. The outputs from all filter sizes are concatenated and passed through a dropout layer (dropout rate 0.5) before a fully connected layer that produces logits for the three classes (time\_critical, support\_and\_relief, non\_informative). The model uses a vocabulary size of 5000 and a maximum sequence length of 64 tokens.
+Our TextCNN model follows the architecture proposed in the original CrisisBench paper, adapted for our three-class classification task. TextCNN is particularly well suited for short, noisy text such as tweets because it captures local patterns such as short phrases indicative of urgent events through convolutional filters of different sizes. The model starts with an embedding layer initialized with pre-trained GloVe word embeddings (50-dimensional), followed by multiple parallel 1D convolutional layers with filter sizes of 3, 4, and 5 to capture n-gram features at different scales (refer to Figure \ref{fig:cnn_flowchart}). Each convolutional layer uses 50 filters and applies ReLU activation, followed by max pooling over the sequence length. The outputs from all filter sizes are concatenated and passed through a dropout layer (dropout rate 0.5) before a fully connected layer that produces logits for the three classes (time\_critical, support\_and\_relief, non\_informative). The model uses a vocabulary size of 5000 and a maximum sequence length of 64 tokens.
 \subsubsection{Hyperparameter Tuning}
 We performed hyperparameter tuning to identify the optimal configuration for our TextCNN model. The hyperparameters that led to the best test F1 score (0.8237) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 32, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_curves}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text.
 \subsubsection{Learning and Validation Curves}
@@ -184,6 +194,7 @@ Overall, the learning behavior demonstrates that TextCNN is efficient and capabl
     \caption{Custom Transformer Learning and Validation Curves}
     \label{fig:custom_transformer_curves}
 \end{figure}
+
 \subsubsection{Architecture}
 
 \subsubsection{Fine-tuning}
@@ -582,5 +593,29 @@ of the use of color in your document.
 %------------------------------------------------------------------------
 
 %-------------------------------------------------------------------------
+
+% \begin{table}
+% \begin{center}
+% \begin{tabular}{|l|c|}
+% \hline
+% Mapped class & Original CrisisBench class \\
+% \hline
+% time\_critical & affected\_individual \\
+% time\_critical & caution\_and\_advice \\
+% time\_critical & displaced\_and\_evacuations \\
+% time\_critical & infrastructure\_and\_utilities\_damage \\
+% time\_critical & injured\_or\_dead\_people \\
+% time\_critical & missing\_and\_found\_people \\
+% \hline
+% support\_and\_relief & requests\_or\_needs \\ support\_and\_relief & donation\_and\_volunteering \\
+% support\_and\_relief & response\_efforts \\
+% \hline
+% non\_informative & not\_humanitarian \\
+% non\_informative & sympathy\_and\_support \\
+% \hline
+% \end{tabular}
+% \end{center}
+% \caption{Label Mapping}
+% \end{table}
 
 \end{document}
