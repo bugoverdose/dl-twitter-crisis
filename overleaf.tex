@@ -73,7 +73,7 @@ Twitter-based classification studies span a wide range of objectives, but many o
 
 To overcome these limitations, we define a three-class classification task based on how tweets can be used during disaster response. Tweets that require immediate action (e.g., reports of injured people or infrastructure damage) should be classified as the \textbf{time-critical} class. Tweets useful for post-rescue aid (e.g., food, shelter, medical supply needs) fall under the \textbf{support-and-relief} class. Tweets that do not contain any relevant or actionable information (e.g., random online users' reactions to the disaster) are classified as \textbf{non-informative}.
 
-To solve this task, multiple deep learning models with different architectures were trained and fine-tuned to perform this three-way classification. We focus on convolutional neural networks (CNN) and transformer-based architectures, as they have previously demonstrated strong performance on crisis datasets \cite{CrisisBenchPaper, Wiegmann2020, Ning}.
+To solve this task, multiple deep learning models with different architectures were trained and fine-tuned to perform this three-way classification. We focus on convolutional neural networks (CNN) and transformer-based architectures, as they have previously demonstrated strong performance on crisis datasets \cite{CrisisBenchPaper, Ning, Wiegmann2020}.
 
 If we can successfully train such a classification system, this system will help responders identify urgent information faster, remove distracting content, and allocate resources more effectively. Time-critical posts could assist 119 dispatchers and search-and-rescue teams, while support-and-relief posts could guide donation planning, shelter distribution, and medical supply delivery. In short, this would make real-time crisis information easier to use, which can directly impact human lives.
 
@@ -88,7 +88,7 @@ The CrisisBench dataset is used for this project \cite{CrisisBenchPaper}. The da
 
 For our project, we use the English portion of the CrisisBench dataset for humanitarian classification task, consisting of 87,455 labeled tweets. The CrisisBench dataset defines 11 humanitarian classes by unifying semantically similar labels across multiple source datasets, merging variants with equivalent meaning (e.g., ``Infrastructure damage'' and ``Infrastructure and utilities'' unified as ``Infrastructure and utilities damage'') \cite{CrisisBenchPaper}. For our three-way classification task, these 11 classes were grouped into three higher-level categories as shown in Table \ref{tab:label_mapping}.
 
-All tweets were preprocessed prior to modeling. URLs were removed because they do not provide meaningful semantic information \cite{URLRemoval}. Twitter-specific tokens such as hashtags (e.g., \#PrayForParis), usernames, and retweet markers (e.g., RT @BreakingNews) were removed. We further removed symbols, emoticons, invisible and non-ASCII characters, and punctuation, following the preprocessing strategy described in the CrisisBench paper \cite{CrisisBenchPaper}. All text was lowercased to reduce vocabulary dimensionality while maintaining semantic validity \cite{TextRemoval}. Finally, 110 tweets were discarded because they contained empty strings or duplicated content, resulting in 87,345 remaining samples. Following the original data splits provided by CrisisBench, the final dataset consisted of 61,089 training samples, 8,921 validation samples, and 17,335 test samples.
+All tweets were preprocessed prior to modeling. URLs were removed because they do not provide meaningful semantic information \cite{URLRemoval}. Twitter-specific tokens such as hashtags (e.g., \#PrayForParis), usernames, and retweet markers (e.g., RT @BreakingNews) were removed. We further removed symbols, emoticons, invisible and non-ASCII characters, and punctuation, following the preprocessing strategy described in the CrisisBench paper \cite{CrisisBenchPaper}. All text was lowercased to reduce vocabulary dimensionality while maintaining semantic validity \cite{TextRemoval}. Finally, 110 tweets were discarded because they contained empty strings or duplicated content, resulting in 87,345 remaining samples. Following the original data splits provided by CrisisBench, the final dataset consisted of 61,089 training samples, 8,921 validation samples, and 17,335 test samples. These subsets roughly account for 70\%, 10\%, and 20\% of the total dataset, respectively.
 
 \begin{table}[t]
 \begin{center}
@@ -97,20 +97,28 @@ All tweets were preprocessed prior to modeling. URLs were removed because they d
 \textbf{Mapped class} & \textbf{Original CrisisBench class} \\
 \hline
 \multirow{6}{*}{time\_critical} 
-    & affected\_individual \\ \cline{2-2}
-    & caution\_and\_advice \\ \cline{2-2}
-    & displaced\_and\_evacuations \\ \cline{2-2}
-    & infrastructure\_and\_utilities\_damage \\ \cline{2-2}
-    & injured\_or\_dead\_people \\ \cline{2-2}
+    & affected\_individual \\ 
+    \cline{2-2}
+    & caution\_and\_advice \\ 
+    \cline{2-2}
+    & displaced\_and\_evacuations \\ 
+    \cline{2-2}
+    & infrastructure\_and\_utilities\_damage \\ 
+    \cline{2-2}
+    & injured\_or\_dead\_people \\ 
+    \cline{2-2}
     & missing\_and\_found\_people \\
 \hline
 \multirow{3}{*}{support\_and\_relief} 
-    & requests\_or\_needs \\ \cline{2-2}
-    & donation\_and\_volunteering \\ \cline{2-2}
+    & requests\_or\_needs \\ 
+    \cline{2-2}
+    & donation\_and\_volunteering \\ 
+    \cline{2-2}
     & response\_efforts \\
 \hline
 \multirow{2}{*}{non\_informative} 
-    & not\_humanitarian \\ \cline{2-2}
+    & not\_humanitarian \\ 
+    \cline{2-2}
     & sympathy\_and\_support \\
 \hline
 \end{tabular}
@@ -119,30 +127,37 @@ All tweets were preprocessed prior to modeling. URLs were removed because they d
 \label{tab:label_mapping}
 \end{table}
 
-% total N =87345
-% df_train: N=61089
-% df_dev: N=8921
-% df_test: N=17335
-
 \section{Approach}
 
-(10 points) What did you do exactly? How did you solve the problem? Why did you think it would be successful? Is anything new in your approach? \\
+% (10 points) What did you do exactly? How did you solve the problem? Why did you think it would be successful? Is anything new in your approach?
+% (5 points) What problems did you anticipate? What problems did you encounter? Did the very first thing you tried work?
+% \textbf{Important: Mention any code repositories (with citations) or other sources that you used, and specifically what changes you made to them for your project.}
 
-(5 points) What problems did you anticipate? What problems did you encounter? Did the very first thing you tried work? \\
+For the experiments, we use CNN and transformer-based models, as they have repeatedly shown strong performance in disaster tweet classification and broader natural language processing tasks \cite{CrisisBenchPaper, Ning, Nguyen, Wiegmann2020}. Our objective is to compare different architectures and identify the most effective model for our three-way classification task. To achieve this, we fine-tuned each model by experimenting with hyperparameters, selecting the configuration that yielded the best validation performance.
 
-\textbf{Important: Mention any code repositories (with citations) or other sources that you used, and specifically what changes you made to them for your project. }
+\subsection{CNN}
 
-\subsection{Models}
+The implemented CNN model begins with an embedding layer initialized with pretrained GloVe word vectors, which are fed into parallel 1D convolutional layers with kernel sizes of 3, 4, and 5 to capture linguistic features across different n-gram spans (see Figure \ref{fig:cnn_flowchart}). Each convolutional branch is activated with ReLU and followed by max-over-time pooling, after which the resulting feature representations are concatenated and regularized through dropout. A final fully connected layer maps the combined feature vector to the three output categories producing logits used for classification.
 
-In our preprocessing pipeline, we apply tokenization, lowercasing, and removal of URLs and user mentions (@username). We then restrict the dataset to the three selected humanitarian categories used in our study.
+The original CrisisBench paper \cite{CrisisBenchPaper} and its public GitHub repository\footnote{\url{https://github.com/firojalam/crisis_datasets_benchmarks}} served as references for our CNN implementation. We did not reuse their source code, since it was written using Keras while our pipeline was developed in PyTorch, and we aimed to introduce several architectural modifications. In particular, unlike the original work that used word2vec embeddings, we used pretrained GloVe vectors. Because GloVe captures global co-occurrence statistics rather than only local context, it tends to produce more semantically structured word representations  \cite{Glove}. We expected this to help the model learn relationships between rare or domain-specific terms often found in crisis-related tweets, providing a stronger initialization for downstream classification.
 
-We evaluate three distinct model architectures:
-\begin{enumerate}
-    \item A \textbf{TextCNN} model utilizing pre-trained \textbf{GloVe} embeddings to assess its ability to extract local n-gram style features.
-    \item A \textbf{custom transformer} model trained from scratch to capture global contextual relationships in the tweets.
-    \item A \textbf{pretrained transformer} model that is fine-tuned on our classification task, representing a transfer learning approach leveraging large-scale language pretraining.
-\end{enumerate}
-By comparing these models, we aim to identify the architecture that offers the best performance for real-time disaster information filtering under our three-label formulation.
+Overall, this architecture is likely to be successful because it follows the widely adopted TextCNN architecture \cite{TextCNN}, which has proven effective for short, informal, and often noisy text such as tweets. By applying multiple convolutional filters with different receptive field sizes, the model can detect key local patterns and capture short but meaningful phrases (e.g., mentions of injuries or resource needs) that signal urgent or relevant information, even when the surrounding text is inconsistent or unstructured.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1.0  \linewidth]{cnn_flowchart.png}
+    \caption{CNN Architecture}
+    \label{fig:cnn_flowchart}
+\end{figure}
+
+\subsection{Transformer}
+
+Vanilla Transformer Text Classifier: Transformer Encoder-based Text Classifier (trained from scratch)
+
+
+% Specifically, a CNN model and a transformer encoder-based text classifier, and fine-tuned a pretrained transformer.
+% \item A \textbf{custom transformer} model trained from scratch to capture global contextual relationships in the tweets.
+% \item A \textbf{pretrained transformer} model that is fine-tuned on our classification task, representing a transfer learning approach leveraging large-scale language pretraining.
 
 
 \subsection{What's New in Our Approach?}
@@ -152,14 +167,24 @@ We anticipated success because:
     \item Target Simplification: Reducing the 11 original labels to three relevant classes directly addresses the challenge of building an actionable, real-time triage system. This simplification aligns with the primary goal of surfacing only the most critical humanitarian information during disasters.
     \item Standardized Cleaning: The implemented text-cleaning steps (removal of URLs, hashtags, user mentions, and non-ASCII characters) follow established best practices for natural language processing on noisy social media data. These steps help ensure that the classification models focus on the core semantic content rather than those irrelevant to humanitarian decision-making.
 \end{itemize}
-\subsection{Problems}
+\subsection{Challenges}
 \textbf{TODO: ALSO TALK ABOUT PROBLEMS FACED DURING EXPERIMENTATION SUCH AS COMPUTATION LIMITS} \\
-We anticipated that the unstructured nature of social media text would lead to noise, and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training. Our very first approach to preprocessing did not work because we failed to account for rows with empty content after cleaning. This led to errors during model training, and we later added logic to remove empty rows after the cleansing process.
+\textit{We anticipated that the unstructured nature of social media text would lead to noise, and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training. Our very first approach to preprocessing did not work because we failed to account for rows with empty content after cleaning. This led to errors during model training, and we later added logic to remove empty rows after the cleansing process.}
+
+We thought we would have to train a long time (high epoch), but signs of overfitting were found in early stages. Dataset size wasn't big enough?
+
+At first, we expected Transformer based model to outperform CNN, but it didn't. We had to use pretrained model to outperform CNN.
+
+Difficulty in tuning at first. reusing the hyperparameters in models from CrisisBench as a starting point helped tuning.
+
+After fine-tuning, training didn't provide much difference between the models.
+
+
 
 \subsection{Performance}
 We evaluated the performance of three distinct model architectures:
 \begin{enumerate}
-    \item A TextCNN model utilizing pre-trained GloVe embeddings to assess its ability to extract local n-gram style features.
+    \item A CNN model utilizing pre-trained GloVe embeddings to assess its ability to extract local n-gram style features.
     \item A custom transformer model trained from scratch to capture global contextual relationships in the tweets.
     \item A pretrained transformer model that is fine-tuned on our classification task, representing a transfer learning approach leveraging large-scale language pretraining.
 \end{enumerate}
@@ -167,23 +192,17 @@ By comparing these models, we aim to identify the architecture that offers the b
 
 \section{Experiments and Results}
 \textbf{Include explanation of why we chose F1 macro score as the primary metric for tuning}.
-\subsection{TextCNN}
-\begin{figure}
-    \centering
-    \includegraphics[width=1.0  \linewidth]{cnn_flowchart.png}
-    \caption{CNN Architecture}
-    \label{fig:cnn_flowchart}
-\end{figure}
+
 
 \subsubsection{Architecture}
-Our TextCNN model follows the architecture proposed in the original CrisisBench paper, adapted for our three-class classification task. TextCNN is particularly well suited for short, noisy text such as tweets because it captures local patterns such as short phrases indicative of urgent events through convolutional filters of different sizes. The model starts with an embedding layer initialized with pre-trained GloVe word embeddings (50-dimensional), followed by multiple parallel 1D convolutional layers with filter sizes of 3, 4, and 5 to capture n-gram features at different scales (refer to Figure \ref{fig:cnn_flowchart}). Each convolutional layer uses 50 filters and applies ReLU activation, followed by max pooling over the sequence length. The outputs from all filter sizes are concatenated and passed through a dropout layer (dropout rate 0.5) before a fully connected layer that produces logits for the three classes (time\_critical, support\_and\_relief, non\_informative). The model uses a vocabulary size of 5000 and a maximum sequence length of 64 tokens.
+Our CNN model follows the architecture proposed in the original CrisisBench paper, adapted for our three-class classification task. CNN is particularly well suited for short, noisy text such as tweets because it captures local patterns such as short phrases indicative of urgent events through convolutional filters of different sizes. The model starts with an embedding layer initialized with pre-trained GloVe word embeddings (50-dimensional), followed by multiple parallel 1D convolutional layers with filter sizes of 3, 4, and 5 to capture n-gram features at different scales (refer to Figure \ref{fig:cnn_flowchart}). Each convolutional layer uses 50 filters and applies ReLU activation, followed by max pooling over the sequence length. The outputs from all filter sizes are concatenated and passed through a dropout layer (dropout rate 0.5) before a fully connected layer that produces logits for the three classes (time\_critical, support\_and\_relief, non\_informative). The model uses a vocabulary size of 5000 and a maximum sequence length of 64 tokens.
 
 \subsubsection{Hyperparameter Tuning}
-We performed hyperparameter tuning to identify the optimal configuration for our TextCNN model. The hyperparameters that led to the best test F1 score (0.8255) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 32, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_val_curve}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text.
+We performed hyperparameter tuning to identify the optimal configuration for our CNN model. The hyperparameters that led to the best test F1 score (0.8255) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 32, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_val_curve}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text.
 
 \subsubsection{Learning and Validation Curves}
 We plotted learning curves tracking both loss and macro F1 score across training epochs for both training and validation sets which is shown in Figures \ref{fig:learning_curves} and \ref{fig:cnn_val_curve}. The curves show consistent improvement over 5 epochs, with the validation F1 score reaching 0.8266 at epoch 3. We also generated a validation curve by varying the number of filters while keeping other hyperparameters fixed, which helped us identify the optimal number of filters (50) for our model architecture. This observation reinforces that moderate-capacity CNNs are better suited for short-text classification, where excessively wide convolutional layers tend to memorize local token combinations rather than generalize.
-Overall, the learning behavior demonstrates that TextCNN is efficient and capable of capturing the structure necessary for triage-focused disaster tweet classification.
+Overall, the learning behavior demonstrates that CNN is efficient and capable of capturing the structure necessary for triage-focused disaster tweet classification.
 
 \begin{figure}[h] % [t] 
     \includegraphics[width=\linewidth]{learning_curves.png}
@@ -193,7 +212,7 @@ Overall, the learning behavior demonstrates that TextCNN is efficient and capabl
 
 \begin{figure}[h] % [t] 
     \includegraphics[width=\linewidth]{textcnn_validation_curve_num_filters.png}
-    \caption{TextCNN Validation curve}
+    \caption{CNN Validation curve}
     \label{fig:cnn_val_curve}
 \end{figure}
 
@@ -230,7 +249,7 @@ Overall, the learning behavior demonstrates that TextCNN is efficient and capabl
         \textbf{Model} & \textbf{Validation F1} & \textbf{Test F1} \\
         \hline
         Custom Transformer & 0.7979 & 0.7980 \\ 
-        TextCNN & 0.8266 & 0.8255 \\          
+        CNN & 0.8266 & 0.8255 \\          
         Pretrained Transformer & 0.8603 & 0.8524 \\
         \hline
     \end{tabular}
@@ -251,7 +270,6 @@ As can be seen in Table~\ref{tab:model_f1_scores}, our pretrained transformer us
 
 \FloatBarrier
 
-%-------------------------------------------------------------------------
 \section{Other Sections}
 
 You are welcome to introduce additional sections or subsections, if required, to address the following questions in detail. 
@@ -279,6 +297,12 @@ What existing code or models did you start with and what did those starting poin
 
 Briefly discuss potential future work that the research community could focus on to make improvements in the direction of your project's topic.
 
+
+\section{Experience}
+
+\textit{(5 points) What problems did you anticipate? What problems did you encounter? Did the very first thing you tried work?}
+
+
 \section{Work Division}
 
 % Please add a section on the delegation of work among team members at the end of the report, in the form of a table and paragraph description. This and references do \textbf{NOT} count towards your page limit. An example has been provided in Table \ref{tab:contributions}.
@@ -297,7 +321,7 @@ Summary of contributions are provided in Table \ref{tab:contributions}.
 Student Name & Contributed Aspects & Details \\
 \hline\hline
 Jinwoo Jeong & Data Preprocessing, Transformer implementation, Training and Analysis & Preprocessed all the Tweeter data used in the project. Implemented custom transformer and fine-tuned pretrained transformer model. \\
-Jade Kim & CNN Implementation, Training and Analysis & Implemented TextCNN model. Fine-tuned TextCNN and custom transformer. Analyzed effect of number of filters in TextCNN. \\
+Jade Kim & CNN Implementation, Training and Analysis & Implemented CNN model. Fine-tuned CNN and custom transformer. Analyzed effect of number of filters in CNN. \\
 \hline
 \end{tabular}
 \end{center}
@@ -652,8 +676,8 @@ of the use of color in your document.
 % \end{subfigure}
 
 % \begin{subfigure}{\linewidth}
-%     \caption{TextCNN Validation curve}
-%     \includegraphics[width=\linewidth]{textcnn_validation_curve_num_filters.png}
+%     \caption{CNN Validation curve}
+%     \includegraphics[width=\linewidth]{CNN_validation_curve_num_filters.png}
 %     \label{fig:cnn_val_curve}
 % \end{subfigure}
 
