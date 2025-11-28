@@ -90,7 +90,7 @@ For our project, we use the English portion of the CrisisBench dataset for human
 All tweets were preprocessed prior to modeling. URLs were removed because they do not provide meaningful semantic information \cite{URLRemoval}. Twitter-specific tokens such as hashtags (e.g., \#PrayForParis), usernames, and retweet markers (e.g., RT @BreakingNews) were removed. We further removed symbols, emoticons, invisible and non-ASCII characters, and punctuation, following the preprocessing strategy described in the CrisisBench paper \cite{CrisisBenchPaper}. All text was lowercased to reduce vocabulary dimensionality while maintaining semantic validity \cite{TextRemoval}. Finally, 110 tweets were discarded because they contained empty strings or duplicated content, resulting in 87,345 remaining samples. Following the original data splits provided by CrisisBench, the final dataset consisted of 61,089 training samples, 8,921 validation samples, and 17,335 test samples.
 
 \begin{table}[t]
-\centering
+\begin{center}
 \begin{tabular}{|c|c|}
 \hline
 \textbf{Mapped class} & \textbf{Original CrisisBench class} \\
@@ -113,6 +113,7 @@ All tweets were preprocessed prior to modeling. URLs were removed because they d
     & sympathy\_and\_support \\
 \hline
 \end{tabular}
+\end{center}
 \caption{Label Mapping}
 \label{tab:label_mapping}
 \end{table}
@@ -175,9 +176,9 @@ By comparing these models, we aim to identify the architecture that offers the b
 \subsubsection{Architecture}
 Our TextCNN model follows the architecture proposed in the original CrisisBench paper, adapted for our three-class classification task. TextCNN is particularly well suited for short, noisy text such as tweets because it captures local patterns such as short phrases indicative of urgent events through convolutional filters of different sizes. The model starts with an embedding layer initialized with pre-trained GloVe word embeddings (50-dimensional), followed by multiple parallel 1D convolutional layers with filter sizes of 3, 4, and 5 to capture n-gram features at different scales (refer to Figure \ref{fig:cnn_flowchart}). Each convolutional layer uses 50 filters and applies ReLU activation, followed by max pooling over the sequence length. The outputs from all filter sizes are concatenated and passed through a dropout layer (dropout rate 0.5) before a fully connected layer that produces logits for the three classes (time\_critical, support\_and\_relief, non\_informative). The model uses a vocabulary size of 5000 and a maximum sequence length of 64 tokens.
 \subsubsection{Hyperparameter Tuning}
-We performed hyperparameter tuning to identify the optimal configuration for our TextCNN model. The hyperparameters that led to the best test F1 score (0.8237) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 32, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_curves}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text.
+We performed hyperparameter tuning to identify the optimal configuration for our TextCNN model. The hyperparameters that led to the best test F1 score (0.8255) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 32, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_curves}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text.
 \subsubsection{Learning and Validation Curves}
-We plotted learning curves tracking both loss and macro F1 score across training epochs for both training and validation sets which is shown in Figure~\ref{fig:cnn_curves}. The curves show consistent improvement over 5 epochs, with the validation F1 score reaching 0.8247 at epoch 3. We also generated a validation curve by varying the number of filters while keeping other hyperparameters fixed, which helped us identify the optimal number of filters (50) for our model architecture. This observation reinforces that moderate-capacity CNNs are better suited for short-text classification, where excessively wide convolutional layers tend to memorize local token combinations rather than generalize.
+We plotted learning curves tracking both loss and macro F1 score across training epochs for both training and validation sets which is shown in Figure~\ref{fig:cnn_curves}. The curves show consistent improvement over 5 epochs, with the validation F1 score reaching 0.8266 at epoch 3. We also generated a validation curve by varying the number of filters while keeping other hyperparameters fixed, which helped us identify the optimal number of filters (50) for our model architecture. This observation reinforces that moderate-capacity CNNs are better suited for short-text classification, where excessively wide convolutional layers tend to memorize local token combinations rather than generalize.
 Overall, the learning behavior demonstrates that TextCNN is efficient and capable of capturing the structure necessary for triage-focused disaster tweet classification.
 \begin{figure}
     \centering
@@ -190,7 +191,7 @@ Overall, the learning behavior demonstrates that TextCNN is efficient and capabl
 \subsection{Custom Transformer}
 \begin{figure}
     \centering
-    \includegraphics[width=1.0\linewidth]{custom_transformer_curves.png}
+    \includegraphics[width=1.0\linewidth]{transformer_curves.png}
     \caption{Custom Transformer Learning and Validation Curves}
     \label{fig:custom_transformer_curves}
 \end{figure}
@@ -198,6 +199,7 @@ Overall, the learning behavior demonstrates that TextCNN is efficient and capabl
 \subsubsection{Architecture}
 
 \subsubsection{Fine-tuning}
+Best test f1: 0.7980
 
 \FloatBarrier
 
@@ -220,6 +222,27 @@ Overall, the learning behavior demonstrates that TextCNN is efficient and capabl
 \label{fig:onecol}
 \end{figure}
 
+\begin{table}[t]
+    \begin{center}
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Model} & \textbf{Validation F1} & \textbf{Test F1} \\
+        \hline
+        Custom Transformer & 0.7979 & 0.7980 \\ 
+        TextCNN & 0.8266 & 0.8255 \\          
+        Pretrained Transformer & 0.8603 & 0.8524 \\
+        \hline
+    \end{tabular}
+    \end{center}
+    \caption{Validation and Test Macro F1 scores for all three models}
+    \label{tab:model_f1_scores}
+\end{table}
+
+\subsection{Summary of Model Performance}
+A summary of model performance can be found in Table~\ref{tab:model_f1_scores}.
+\textbf{Add information}
+
+\subsection{Measuring Success}
 
 (10 points) How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? Justify your reasons with arguments supported by evidence and data.
 
