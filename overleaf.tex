@@ -180,7 +180,7 @@ TBA - DeBERTa
 
 \subsection{Model Evaluation}
 
-As shown in Table \ref{tab:class_distribution}, the dataset is imbalanced. Approximately 65\% of tweets were labeled as non\_informative, while the other two classes each account for only about 18\%. Under such imbalance, accuracy becomes a misleading indicator of performance because a model biased toward the majority class can still achieve a high score. To avoid this, we train models with macro F1-score as the primary objective, ensuring that minority classes are weighted equally during fine-tuning.
+As shown in Table \ref{tab:class_distribution}, the dataset is imbalanced. Approximately 65\% of tweets were labeled as non\_informative, while the other two classes each account for only about 18\%. Under such imbalance, accuracy becomes a misleading indicator of performance because a model biased toward the majority class can still achieve a high score. To avoid this, we trained models with macro F1-score as the primary objective, ensuring that minority classes are weighted equally during fine-tuning.
 
 \begin{table}[h] % [b]
 \begin{center}
@@ -204,8 +204,6 @@ Total & 87,345 & 100\% \\
 
 After identifying the best-performing model, evaluation will not rely on a single metric. Because each class carries different operational implications during disaster response, we will further analyze false positives and false negatives per class, along with qualitative inspection of misclassified samples. This enables us to assess not only overall effectiveness, but also how reliably the model differentiates urgent information, relief-related reports, and irrelevant content in real-world use.
 
-
-
 % We evaluated the performance of three distinct model architectures:
 % \begin{enumerate}
 %     \item A CNN model utilizing pre-trained GloVe embeddings to assess its ability to extract local n-gram style features.
@@ -227,8 +225,13 @@ Difficulty in tuning at first. reusing the hyperparameters in models from Crisis
 After fine-tuning, training didn't provide much difference between the models.
 
 \section{Experiments and Results}
-\textbf{Include explanation of why we chose F1 macro score as the primary metric for tuning}.
 
+(10 points) How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? Justify your reasons with arguments supported by evidence and data.
+
+\textbf{Important: This section should be rigorous and thorough. Present detailed information about decision you made, why you made them, and any evidence/experimentation to back them up. This is especially true if you leveraged existing architectures, pre-trained models, and code (i.e. do not just show results of fine-tuning a pre-trained model without any analysis, claims/evidence, and conclusions, as that tends to not make a strong project).}
+
+
+\subsection{CNN}
 
 \subsubsection{Architecture}
 Our CNN model follows the architecture proposed in the original CrisisBench paper, adapted for our three-class classification task. CNN is particularly well suited for short, noisy text such as tweets because it captures local patterns such as short phrases indicative of urgent events through convolutional filters of different sizes. The model starts with an embedding layer initialized with pre-trained GloVe word embeddings (50-dimensional), followed by multiple parallel 1D convolutional layers with filter sizes of 3, 4, and 5 to capture n-gram features at different scales (refer to Figure \ref{fig:cnn_flowchart}). Each convolutional layer uses 50 filters and applies ReLU activation, followed by max pooling over the sequence length. The outputs from all filter sizes are concatenated and passed through a dropout layer (dropout rate 0.5) before a fully connected layer that produces logits for the three classes (time\_critical, support\_and\_relief, non\_informative). The model uses a vocabulary size of 5000 and a maximum sequence length of 64 tokens.
@@ -278,15 +281,18 @@ Overall, the learning behavior demonstrates that CNN is efficient and capable of
 
 \subsubsection{Fine-tuning}
 
-\begin{table}[t]
+\subsection{Summary of Model Performance}
+As can be seen in Table \ref{tab:model_f1_scores}, our pretrained transformer using DeBerta-v3 showed the best performance in terms of macro f1 scores. 
+
+\begin{table} % [t]
     \begin{center}
     \begin{tabular}{|l|c|c|}
         \hline
-        \textbf{Model} & \textbf{Validation F1} & \textbf{Test F1} \\
+        \textbf{Model} & \textbf{val f1} & \textbf{test f1} \\
         \hline
-        Custom Transformer & 0.7979 & 0.7980 \\ 
         CNN & 0.8266 & 0.8255 \\          
-        Pretrained Transformer & 0.8603 & 0.8524 \\
+        Transformer & 0.7979 & 0.7980 \\ 
+        DeBERTa & 0.8603 & 0.8524 \\
         \hline
     \end{tabular}
     \end{center}
@@ -294,15 +300,90 @@ Overall, the learning behavior demonstrates that CNN is efficient and capable of
     \label{tab:model_f1_scores}
 \end{table}
 
-\subsection{Summary of Model Performance}
-As can be seen in Table~\ref{tab:model_f1_scores}, our pretrained transformer using DeBerta-v3 showed the best performance in terms of macro f1 scores. 
-\textbf{Add information}
+% \begin{table*} % [t]
+%     \begin{center}
+%     \begin{tabular}{|c|c|c|c|c|c|}
+%         \hline
+%         \textbf{Class} & \textbf{True Label} & \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{TN} \\
+%         \hline
+%         time\_critical & 3,040 & 2,484 & 724 & 556 & 13,571 \\
+%         support\_and\_relief & 3,040 & 2,600 & 601 & 440 & 13,694 \\ 
+%         non\_informative & 11,255 & 10,303 & 623 & 952 & 5,457 \\  
+%         \hline
+%     \end{tabular}
+%     \end{center}
+%     \caption{Confusion matrix–derived counts for each class in the DeBERTa model’s predictions}
+%     % (TP=True Positives, FP=False Positives, FN=False Negatives, TN=True Negatives)
+%     \label{tab:model_error_performances}
+% \end{table*}
+
+\begin{table*} % [t]
+    \begin{center}
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+        \hline
+         \textbf{Model} & \textbf{Class} & \textbf{True Label} & \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{TN} \\
+            \hline
+         \multirow{3}{*}{Transformer} 
+            & time\_critical & 3,040 & 1,999 & 521 & 1,041 & 13,774 \\
+            & support\_and\_relief & 3,040 & 2,274 & 630 & 766 & 13,665 \\ 
+            & non\_informative & 11,255 & 10,539 & \textbf{1,372} & 716 & 4,708 \\  
+          \hline
+         \multirow{3}{*}{CNN} 
+            & time\_critical & 3,040 & 2,335 & 766 & 705 & 13,529 \\
+            & support\_and\_relief & 3,040 & 2,380 & 543 & 660 & 13,752 \\ 
+            & non\_informative & 11,255 & 10,356 & \textbf{955} & 899 & 5,125 \\  
+          \hline
+         \multirow{3}{*}{DeBERTa} 
+            & time\_critical & 3,040 & \textbf{2,484} & 724 & 556 & 13,571 \\
+            & support\_and\_relief & 3,040 & \textbf{2,600} & 601 & 440 & 13,694 \\ 
+            & non\_informative & 11,255 & 10,303 & 623 & 952 & 5,457 \\  
+          \hline
+    \end{tabular}
+    \end{center}
+    \caption{Confusion matrix–derived counts for each class in the models' predictions}
+    % (TP=True Positives, FP=False Positives, FN=False Negatives, TN=True Negatives)
+    \label{tab:model_error_performances}
+\end{table*}
+
+% \begin{table}[t]
+% \begin{center}
+% \begin{tabular}{|c|c|}
+% \hline
+% \textbf{Mapped class} & \textbf{Original CrisisBench class} \\
+% \hline
+% \multirow{6}{*}{time\_critical} 
+%     & affected\_individual \\ 
+%     \cline{2-2}
+%     & caution\_and\_advice \\ 
+%     \cline{2-2}
+%     & displaced\_and\_evacuations \\ 
+%     \cline{2-2}
+%     & infrastructure\_and\_utilities\_damage \\ 
+%     \cline{2-2}
+%     & injured\_or\_dead\_people \\ 
+%     \cline{2-2}
+%     & missing\_and\_found\_people \\
+% \hline
+% \multirow{3}{*}{support\_and\_relief} 
+%     & requests\_or\_needs \\ 
+%     \cline{2-2}
+%     & donation\_and\_volunteering \\ 
+%     \cline{2-2}
+%     & response\_efforts \\
+% \hline
+% \multirow{2}{*}{non\_informative} 
+%     & not\_humanitarian \\ 
+%     \cline{2-2}
+%     & sympathy\_and\_support \\
+% \hline
+% \end{tabular}
+% \end{center}
+% \caption{Label Mapping}
+% \label{tab:label_mapping}
+% \end{table}
+
 
 \subsection{Measuring Success}
-
-(10 points) How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? Justify your reasons with arguments supported by evidence and data.
-
-\textbf{Important: This section should be rigorous and thorough. Present detailed information about decision you made, why you made them, and any evidence/experimentation to back them up. This is especially true if you leveraged existing architectures, pre-trained models, and code (i.e. do not just show results of fine-tuning a pre-trained model without any analysis, claims/evidence, and conclusions, as that tends to not make a strong project). }
 
 \FloatBarrier
 
