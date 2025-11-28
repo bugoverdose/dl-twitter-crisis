@@ -16,6 +16,7 @@
 % run, let it finish, and you should be clear).
 \usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
 \usepackage{multirow}
+% \usepackage{subcaption}
 
 \cvprfinalcopy % *** Uncomment this line for the final submission
 
@@ -165,6 +166,7 @@ We evaluated the performance of three distinct model architectures:
 By comparing these models, we aim to identify the architecture that offers the best performance for real-time disaster information filtering under our three-label formulation.
 
 \section{Experiments and Results}
+\textbf{Include explanation of why we chose F1 macro score as the primary metric for tuning}.
 \subsection{TextCNN}
 \begin{figure}
     \centering
@@ -175,52 +177,51 @@ By comparing these models, we aim to identify the architecture that offers the b
 
 \subsubsection{Architecture}
 Our TextCNN model follows the architecture proposed in the original CrisisBench paper, adapted for our three-class classification task. TextCNN is particularly well suited for short, noisy text such as tweets because it captures local patterns such as short phrases indicative of urgent events through convolutional filters of different sizes. The model starts with an embedding layer initialized with pre-trained GloVe word embeddings (50-dimensional), followed by multiple parallel 1D convolutional layers with filter sizes of 3, 4, and 5 to capture n-gram features at different scales (refer to Figure \ref{fig:cnn_flowchart}). Each convolutional layer uses 50 filters and applies ReLU activation, followed by max pooling over the sequence length. The outputs from all filter sizes are concatenated and passed through a dropout layer (dropout rate 0.5) before a fully connected layer that produces logits for the three classes (time\_critical, support\_and\_relief, non\_informative). The model uses a vocabulary size of 5000 and a maximum sequence length of 64 tokens.
+
 \subsubsection{Hyperparameter Tuning}
-We performed hyperparameter tuning to identify the optimal configuration for our TextCNN model. The hyperparameters that led to the best test F1 score (0.8255) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 32, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_curves}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text.
+We performed hyperparameter tuning to identify the optimal configuration for our TextCNN model. The hyperparameters that led to the best test F1 score (0.8255) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 32, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_val_curve}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text.
+
 \subsubsection{Learning and Validation Curves}
-We plotted learning curves tracking both loss and macro F1 score across training epochs for both training and validation sets which is shown in Figure~\ref{fig:cnn_curves}. The curves show consistent improvement over 5 epochs, with the validation F1 score reaching 0.8266 at epoch 3. We also generated a validation curve by varying the number of filters while keeping other hyperparameters fixed, which helped us identify the optimal number of filters (50) for our model architecture. This observation reinforces that moderate-capacity CNNs are better suited for short-text classification, where excessively wide convolutional layers tend to memorize local token combinations rather than generalize.
+We plotted learning curves tracking both loss and macro F1 score across training epochs for both training and validation sets which is shown in Figures \ref{fig:learning_curves} and \ref{fig:cnn_val_curve}. The curves show consistent improvement over 5 epochs, with the validation F1 score reaching 0.8266 at epoch 3. We also generated a validation curve by varying the number of filters while keeping other hyperparameters fixed, which helped us identify the optimal number of filters (50) for our model architecture. This observation reinforces that moderate-capacity CNNs are better suited for short-text classification, where excessively wide convolutional layers tend to memorize local token combinations rather than generalize.
 Overall, the learning behavior demonstrates that TextCNN is efficient and capable of capturing the structure necessary for triage-focused disaster tweet classification.
-\begin{figure}
-    \centering
-    \includegraphics[width=1.0\linewidth]{cnn_curves.png}
-    \caption{CNN Learning and Validation Curves}
-    \label{fig:cnn_curves}
+
+\begin{figure}[h] % [t] 
+    \includegraphics[width=\linewidth]{learning_curves.png}
+    \caption{Learning curves}
+    \label{fig:learning_curves}
 \end{figure}
-\subsubsection{Analysis of Results}
+
+\begin{figure}[h] % [t] 
+    \includegraphics[width=\linewidth]{textcnn_validation_curve_num_filters.png}
+    \caption{TextCNN Validation curve}
+    \label{fig:cnn_val_curve}
+\end{figure}
 
 \subsection{Custom Transformer}
-\begin{figure}
-    \centering
-    \includegraphics[width=1.0\linewidth]{transformer_curves.png}
-    \caption{Custom Transformer Learning and Validation Curves}
-    \label{fig:custom_transformer_curves}
+
+\begin{figure}[h] % [t] 
+    \includegraphics[width=\linewidth]{custom_transformer_validation_curve.png}
+    \caption{Custom Transformer Validation curve}
+    \label{fig:transformer_val_curve}
 \end{figure}
 
 \subsubsection{Architecture}
 
 \subsubsection{Fine-tuning}
-Best test f1: 0.7980
 
 \FloatBarrier
 
 \subsection{Fine-tuning Pretrained Transformer}
 
+\begin{figure}[h] % [t] 
+    \includegraphics[width=\linewidth]{pretrained_transformer_f1_score_val_curve.png}
+    \caption{DeBERTa Validation curve}
+    \label{fig:pretrained_val_curve}
+\end{figure}
+
 \subsubsection{Architecture}
 
 \subsubsection{Fine-tuning}
-
-\begin{figure}[h] % [t] 
-\begin{center}
-% \fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
-\includegraphics[width=1.05\linewidth]{pretrained_transformer_f1_score_curve.png}
-\includegraphics[width=1\linewidth]{pretrained_transformer_f1_score_val_curve1.png}
-\end{center}
-   \caption{Example of caption.  It is set in Roman so that mathematics
-   (always set in Roman: $B \sin A = A \sin B$) may be included without an
-   ugly clash.}
-\label{fig:long}
-\label{fig:onecol}
-\end{figure}
 
 \begin{table}[t]
     \begin{center}
@@ -239,7 +240,7 @@ Best test f1: 0.7980
 \end{table}
 
 \subsection{Summary of Model Performance}
-A summary of model performance can be found in Table~\ref{tab:model_f1_scores}.
+As can be seen in Table~\ref{tab:model_f1_scores}, our pretrained transformer using DeBerta-v3 showed the best performance in terms of macro f1 scores. 
 \textbf{Add information}
 
 \subsection{Measuring Success}
@@ -613,6 +614,8 @@ the line width as in the example below
 Please refer to the author guidelines on the CVPR 2020 web page for a discussion
 of the use of color in your document.
 
+\end{document}
+
 %------------------------------------------------------------------------
 
 %-------------------------------------------------------------------------
@@ -641,4 +644,30 @@ of the use of color in your document.
 % \caption{Label Mapping}
 % \end{table}
 
-\end{document}
+% \begin{figure}[h] % [t] 
+% \begin{subfigure}{\linewidth}
+%     \caption{Learning curves for CNN and Transformer models}
+%     \includegraphics[width=\linewidth]{learning_curves.png}
+%     \label{fig:learning_curves}
+% \end{subfigure}
+
+% \begin{subfigure}{\linewidth}
+%     \caption{TextCNN Validation curve}
+%     \includegraphics[width=\linewidth]{textcnn_validation_curve_num_filters.png}
+%     \label{fig:cnn_val_curve}
+% \end{subfigure}
+
+% \begin{subfigure}{\linewidth}
+%     \caption{Custom Transformer Validation curve}
+%     \includegraphics[width=\linewidth]{custom_transformer_validation_curve.png}
+%     \label{fig:transformer_val_curve}
+% \end{subfigure}
+
+% \begin{subfigure}{\linewidth}
+%     \caption{DeBERTa Validation curve}
+%     \includegraphics[width=\linewidth]{pretrained_transformer_f1_score_val_curve.png}
+%     \label{fig:pretrained_val_curve}
+% \end{subfigure}
+% \caption{Learning and Validation curves}
+% \label{fig:learning_validation_curves}
+% \end{figure}
