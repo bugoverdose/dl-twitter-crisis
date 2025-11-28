@@ -88,8 +88,6 @@ The CrisisBench dataset is used for this project \cite{CrisisBenchPaper}. The da
 
 For our project, we use the English portion of the CrisisBench dataset for humanitarian classification task, consisting of 87,455 labeled tweets. The CrisisBench dataset defines 11 humanitarian classes by unifying semantically similar labels across multiple source datasets, merging variants with equivalent meaning (e.g., ``Infrastructure damage'' and ``Infrastructure and utilities'' unified as ``Infrastructure and utilities damage'') \cite{CrisisBenchPaper}. For our three-way classification task, these 11 classes were grouped into three higher-level categories as shown in Table \ref{tab:label_mapping}.
 
-All tweets were preprocessed prior to modeling. URLs were removed because they do not provide meaningful semantic information \cite{URLRemoval}. Twitter-specific tokens such as hashtags (e.g., \#PrayForParis), usernames, and retweet markers (e.g., RT @BreakingNews) were removed. We further removed symbols, emoticons, invisible and non-ASCII characters, and punctuation, following the preprocessing strategy described in the CrisisBench paper \cite{CrisisBenchPaper}. All text was lowercased to reduce vocabulary dimensionality while maintaining semantic validity \cite{TextRemoval}. Finally, 110 tweets were discarded because they contained empty strings or duplicated content, resulting in 87,345 remaining samples. Following the original data splits provided by CrisisBench, the final dataset consisted of 61,089 training samples, 8,921 validation samples, and 17,335 test samples. These subsets roughly account for 70\%, 10\%, and 20\% of the total dataset, respectively.
-
 \begin{table}[t]
 \begin{center}
 \begin{tabular}{|c|c|}
@@ -127,6 +125,8 @@ All tweets were preprocessed prior to modeling. URLs were removed because they d
 \label{tab:label_mapping}
 \end{table}
 
+All tweets were preprocessed prior to modeling. URLs were removed because they do not provide meaningful semantic information \cite{URLRemoval}. Twitter-specific tokens such as hashtags (e.g., \#PrayForParis), usernames, and retweet markers (e.g., RT @BreakingNews) were removed. We further removed symbols, emoticons, invisible and non-ASCII characters, and punctuation, following the preprocessing strategy described in the CrisisBench paper \cite{CrisisBenchPaper}. All text was lowercased to reduce vocabulary dimensionality while maintaining semantic validity \cite{TextRemoval}. Finally, 110 tweets were discarded because they contained empty strings or duplicated content, resulting in 87,345 remaining samples. Following the original data splits provided by CrisisBench, the final dataset consisted of 61,089 training samples, 8,921 validation samples, and 17,335 test samples. These subsets roughly account for 70\%, 10\%, and 20\% of the total dataset, respectively.
+
 \section{Approach}
 
 % (10 points) What did you do exactly? How did you solve the problem? Why did you think it would be successful? Is anything new in your approach?
@@ -137,7 +137,9 @@ For the experiments, we use CNN and transformer-based models, as they have repea
 
 \subsection{CNN}
 
-The implemented CNN model begins with an embedding layer initialized with pretrained GloVe word vectors, which are fed into parallel 1D convolutional layers with kernel sizes of 3, 4, and 5 to capture linguistic features across different n-gram spans (see Figure \ref{fig:cnn_flowchart}). Each convolutional branch is activated with ReLU and followed by max-over-time pooling, after which the resulting feature representations are concatenated and regularized through dropout. A final fully connected layer maps the combined feature vector to the three output categories producing logits used for classification.
+We implemented the CNN model from scratch using PyTorch. The implemented model begins with an embedding layer initialized with pretrained GloVe word vectors, which are fed into parallel 1D convolutional layers with kernel sizes of 3, 4, and 5 to capture linguistic features across different n-gram spans (see Figure \ref{fig:cnn_flowchart}). Each convolutional branch is activated with ReLU and followed by max-over-time pooling, after which the resulting feature representations are concatenated and regularized through dropout. A final fully connected layer maps the combined feature vector to the three output categories producing logits used for classification.
+
+TBA: number of parameters to be trained
 
 The original CrisisBench paper \cite{CrisisBenchPaper} and its public GitHub repository\footnote{\url{https://github.com/firojalam/crisis_datasets_benchmarks}} served as references for our CNN implementation. We did not reuse their source code, since it was written using Keras while our pipeline was developed in PyTorch, and we aimed to introduce several architectural modifications. In particular, unlike the original work that used word2vec embeddings, we used pretrained GloVe vectors. Because GloVe captures global co-occurrence statistics rather than only local context, it tends to produce more semantically structured word representations  \cite{Glove}. We expected this to help the model learn relationships between rare or domain-specific terms often found in crisis-related tweets, providing a stronger initialization for downstream classification.
 
@@ -152,7 +154,14 @@ Overall, this architecture is likely to be successful because it follows the wid
 
 \subsection{Transformer}
 
-Vanilla Transformer Text Classifier: Transformer Encoder-based Text Classifier (trained from scratch)
+TBA - Vanilla Transformer Text Classifier: Transformer Encoder-based Text Classifier (trained from scratch)
+
+\subsection{Pretrained Transformer}
+
+TBA - DeBERTa
+
+% We implemented the CNN model from scratch using PyTorch. The implemented model begins with an embedding layer initialized with pretrained GloVe word vectors, which are fed into parallel 1D convolutional layers with kernel sizes of 3, 4, and 5 to capture linguistic features across different n-gram spans (see Figure \ref{fig:cnn_flowchart}). Each convolutional branch is activated with ReLU and followed by max-over-time pooling, after which the resulting feature representations are concatenated and regularized through dropout. A final fully connected layer maps the combined feature vector to the three output categories producing logits used for classification.
+
 
 
 % Specifically, a CNN model and a transformer encoder-based text classifier, and fine-tuned a pretrained transformer.
@@ -161,12 +170,50 @@ Vanilla Transformer Text Classifier: Transformer Encoder-based Text Classifier (
 
 
 \subsection{What's New in Our Approach?}
-The main novelty in our approach is not in the individual cleaning steps, but in the re-framing of the CrisisBench classification task itself, moving from a 11-class problem to a triage-centric 3-class problem (time\_critical, support\_and\_relief, non\_informative), which prioritizes immediate operational utility for disaster response.
-We anticipated success because:
-\begin{itemize}
-    \item Target Simplification: Reducing the 11 original labels to three relevant classes directly addresses the challenge of building an actionable, real-time triage system. This simplification aligns with the primary goal of surfacing only the most critical humanitarian information during disasters.
-    \item Standardized Cleaning: The implemented text-cleaning steps (removal of URLs, hashtags, user mentions, and non-ASCII characters) follow established best practices for natural language processing on noisy social media data. These steps help ensure that the classification models focus on the core semantic content rather than those irrelevant to humanitarian decision-making.
-\end{itemize}
+% The main novelty in our approach is not in the individual cleaning steps, but in the re-framing of the CrisisBench classification task itself, moving from a 11-class problem to a triage-centric 3-class problem (time\_critical, support\_and\_relief, non\_informative), which prioritizes immediate operational utility for disaster response.
+% We anticipated success because:
+% \begin{itemize}
+%     \item Target Simplification: Reducing the 11 original labels to three relevant classes directly addresses the challenge of building an actionable, real-time triage system. This simplification aligns with the primary goal of surfacing only the most critical humanitarian information during disasters.
+%     \item Standardized Cleaning: The implemented text-cleaning steps (removal of URLs, hashtags, user mentions, and non-ASCII characters) follow established best practices for natural language processing on noisy social media data. These steps help ensure that the classification models focus on the core semantic content rather than those irrelevant to humanitarian decision-making.
+% \end{itemize}
+
+
+\subsection{Model Evaluation}
+
+As shown in Table \ref{tab:class_distribution}, the dataset is imbalanced. Approximately 65\% of tweets were labeled as non\_informative, while the other two classes each account for only about 18\%. Under such imbalance, accuracy becomes a misleading indicator of performance because a model biased toward the majority class can still achieve a high score. To avoid this, we train models with macro F1-score as the primary objective, ensuring that minority classes are weighted equally during fine-tuning.
+
+\begin{table}[h] % [b]
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Class} & \textbf{Count} & \textbf{Percent} \\
+\hline
+time\_critical & 15,363 & 17.5889\% \\ 
+% \hline
+support\_and\_relief & 15,390 & 17.6198\% \\ 
+% \hline
+non\_informative & 56,592 & 64.7913\% \\ 
+\hline
+Total & 87,345 & 100\% \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{Class distribution for CrisisBench dataset}
+\label{tab:class_distribution}
+\end{table}
+
+After identifying the best-performing model, evaluation will not rely on a single metric. Because each class carries different operational implications during disaster response, we will further analyze false positives and false negatives per class, along with qualitative inspection of misclassified samples. This enables us to assess not only overall effectiveness, but also how reliably the model differentiates urgent information, relief-related reports, and irrelevant content in real-world use.
+
+
+
+% We evaluated the performance of three distinct model architectures:
+% \begin{enumerate}
+%     \item A CNN model utilizing pre-trained GloVe embeddings to assess its ability to extract local n-gram style features.
+%     \item A custom transformer model trained from scratch to capture global contextual relationships in the tweets.
+%     \item A pretrained transformer model that is fine-tuned on our classification task, representing a transfer learning approach leveraging large-scale language pretraining.
+% \end{enumerate}
+% By comparing these models, we aim to identify the architecture that offers the best performance for real-time disaster information filtering under our three-label formulation.
+
 \subsection{Challenges}
 \textbf{TODO: ALSO TALK ABOUT PROBLEMS FACED DURING EXPERIMENTATION SUCH AS COMPUTATION LIMITS} \\
 \textit{We anticipated that the unstructured nature of social media text would lead to noise, and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training. Our very first approach to preprocessing did not work because we failed to account for rows with empty content after cleaning. This led to errors during model training, and we later added logic to remove empty rows after the cleansing process.}
@@ -178,17 +225,6 @@ At first, we expected Transformer based model to outperform CNN, but it didn't. 
 Difficulty in tuning at first. reusing the hyperparameters in models from CrisisBench as a starting point helped tuning.
 
 After fine-tuning, training didn't provide much difference between the models.
-
-
-
-\subsection{Performance}
-We evaluated the performance of three distinct model architectures:
-\begin{enumerate}
-    \item A CNN model utilizing pre-trained GloVe embeddings to assess its ability to extract local n-gram style features.
-    \item A custom transformer model trained from scratch to capture global contextual relationships in the tweets.
-    \item A pretrained transformer model that is fine-tuned on our classification task, representing a transfer learning approach leveraging large-scale language pretraining.
-\end{enumerate}
-By comparing these models, we aim to identify the architecture that offers the best performance for real-time disaster information filtering under our three-label formulation.
 
 \section{Experiments and Results}
 \textbf{Include explanation of why we chose F1 macro score as the primary metric for tuning}.
