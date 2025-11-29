@@ -187,20 +187,13 @@ Total & 87,345 & 100\% \\
 
 \section{Training and Model Selection}
 
-\textbf{Explain learnable parameters and hyperparameters, and then explain which hyperparameters were chosen using validation curve}
-
 \subsection{CNN}
 
-% TBA: add number of parameters to be trained?
+The CNN model contains multiple adjustable hyperparameters, including the number of convolution filters, embedding dimension, kernel sizes, dropout probability, and vocabulary size. The model with highest validation F1 score had learning rate of $1 \times 10^{-3}$, 50 filters per kernel, batch size of 64, 50-dimensional GloVe embeddings, dropout of 0.5, a vocabulary size of 5,000, and a maximum input length of 64 tokens.
 
-\textbf{Architecture} - only use the hyperparameter information
+With this configuration, the learnable parameters can be quantified as follows. The 50-dimensional GloVe embedding matrix accounts for $5000 \times 50 = 250000$ trainable weights. The three convolutional layers collectively add $\sum_{fs \in {3,4,5}} 50 \cdot (50 \cdot fs + 1) = 30150$ parameters, since each filter learns $50 \times fs$ weights plus one bias term. After max-pooling, the resulting feature vector of dimension $3 \times 50 = 150$ is passed to a linear classifier for three-way prediction, contributing $(150 \cdot 3) + 3 = 453$ additional weights. As dropout contains no trainable components, the final model contains 280,603 learnable parameters under the best configuration.
 
-Our CNN model follows the architecture proposed in the original CrisisBench paper, adapted for our three-class classification task. CNN is particularly well suited for short, noisy text such as tweets because it captures local patterns such as short phrases indicative of urgent events through convolutional filters of different sizes. The model starts with an embedding layer initialized with pre-trained GloVe word embeddings (50-dimensional), followed by multiple parallel 1D convolutional layers with filter sizes of 3, 4, and 5 to capture n-gram features at different scales (refer to Figure \ref{fig:cnn_flowchart}). Each convolutional layer uses 50 filters and applies ReLU activation, followed by max pooling over the sequence length. The outputs from all filter sizes are concatenated and passed through a dropout layer (dropout rate 0.5) before a fully connected layer that produces logits for the three classes (time\_critical, support\_and\_relief, non\_informative). The model uses a vocabulary size of 5000 and a maximum sequence length of 64 tokens.
-
-\textbf{Hyperparameter Tuning} We performed hyperparameter tuning to identify the optimal configuration for our CNN model. The hyperparameters that led to the best test F1 score (0.8255) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 32, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_val_curve}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text.
-
-\textbf{Learning and Validation Curves} We plotted learning curves tracking both loss and macro F1 score across training epochs for both training and validation sets which is shown in Figures \ref{fig:learning_curves} and \ref{fig:cnn_val_curve}. The curves show consistent improvement over 5 epochs, with the validation F1 score reaching 0.8266 at epoch 3. We also generated a validation curve by varying the number of filters while keeping other hyperparameters fixed, which helped us identify the optimal number of filters (50) for our model architecture. This observation reinforces that moderate-capacity CNNs are better suited for short-text classification, where excessively wide convolutional layers tend to memorize local token combinations rather than generalize.
-Overall, the learning behavior demonstrates that CNN is efficient and capable of capturing the structure necessary for triage-focused disaster tweet classification.
+Changing the number of convolution filters had the most notable impact on model capacity. As the number of filters increases, the parameter count in the convolution layers scales proportionally according to $\sum_{fs \in \{3,4,5\}} nf \cdot (50 \cdot fs + 1)$. For configurations with 25, 50, 75, and 100 filters, this corresponds to approximately 15,075, 30,150, 45,225, and 60,300 learnable parameters, respectively. As shown in Figure \ref{fig:cnn_val_curve}, varying the number of filters resulted in notable changes in validation performance. Too few filters constrain the model's ability to capture diverse n-gram patterns and semantic cues, whereas too many inflate capacity and promote overfitting relative to dataset size. In this setting, an intermediate configuration of 50 filters per kernel produced the best generalization.
 
 \begin{figure}[h] % [t] 
     \includegraphics[width=\linewidth]{textcnn_validation_curve_num_filters.png}
@@ -209,6 +202,8 @@ Overall, the learning behavior demonstrates that CNN is efficient and capable of
 \end{figure}
 
 \subsection{Custom Transformer}
+
+\textbf{Explain learnable parameters and hyperparameters, and then explain which hyperparameters were chosen using validation curve}
 
 Best configuration: learning rate = $3 \times 10^{-4}$, 
 
@@ -253,7 +248,7 @@ Best configuration: learning rate = $5 \times 10^{-6}$, batch size = 16, weight 
     \label{fig:pretrained_val_curve}
 \end{figure}
 
-\subsubsection{Learning Curves}
+\subsection{Learning Curves}
 
 Figure \ref{fig:learning_curves} shows the learning curves for each model under their best-performing hyperparameter settings, with the red vertical line marking the epoch of peak validation performance. Validation F1-score reached a near-saturated level as early as the first epoch and showed minimal improvement afterward, even as training performance continued to rise. This suggests that later epochs contributed more to fitting the training data than to improving generalization. This may be due to limited dataset size (61,089 samples) and the short, low-variability nature of tweet-length inputs.
 
@@ -273,7 +268,7 @@ This behavior aligns with known properties of CNNs and Transformer encoders. Bot
 
 \subsection{Quantitative Analysis}
 % \subsection{Summary of Model Performance}
-As can be seen in Table \ref{tab:model_f1_scores}, our pretrained transformer using DeBerta-v3 showed the best performance in terms of macro f1 scores. 
+As can be seen in Table \ref{tab:model_f1_scores}, our pretrained transformer using DeBerta-v3 showed the best performance in terms of macro F1 scores. 
 
 Table \ref{tab:model_error_performances}
 
@@ -339,71 +334,21 @@ Table \ref{tab:model_error_performances}
 \end{table*}
 
 \subsection{Qualitative Analysis}
-As our DeBerta model shows the best performance in terms of f1 score, we decided to perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBerta? Out of 17,335 test data, DeBerta misclassified 1850 tweets. We picked a few categories of misclassifications to analyze.
-\subsubsection{time\_critical vs. non\_informative (358 Tweets)}
-We first look at tweets classified as \textbf{time\_critical} by the CrisisBench dataset, but classified as \textbf{non\_informative} by DeBerta. Table~\ref{tab:qualitative_examples_tc_ni} shows examples of such tweets. After manual inspection of 358 tweets, only one tweet could be argued as \textbf{time\_critical}, but it is unclear whether it is related to a crisis or just an isolated incident. All other 357 tweets classified as \textbf{time\_critical} by the original dataset was not critical, and rather resembled news headlines or weather reports instead of urgent calls for rescue. Therefore, we conclude that DeBERTa is highly effective at filtering out non-actionable content, which is extremely valuable for real-time crisis triage where excessive false alarms can hinder rescue prioritization.
+As our DeBerta model shows the best performance in terms of F1 score, we decided to perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBerta? Out of 17,335 test data, DeBerta misclassified 1850 tweets. We picked a few categories of misclassifications to analyze.
+\subsubsection{Filtering non-essential tweets}
+We first look at tweets classified as \textbf{time\_critical} by the CrisisBench dataset but predicted as \textbf{non\_informative} by DeBERTa. After manually inspecting all 358 such tweets, we found that nearly all were incorrectly labeled as time\_critical in the original dataset and did not represent actionable, urgent, or location-specific cries for help. Many were entirely unrelated to crises, such as the tweet, ``how many fertilizer plants are there in texas?...'', which provides no emergency context. Others referenced crisis-related events but lacked any actionable content, such as ``...\#HurricaneODILE so many crashes and crumbles. Water coming in our 5th floor hotel room. Terrifying.'' While this tweet reflects a hazardous situation, it contains no request for assistance, location details, or actionable information. Out of the entire set, only a single tweet appeared potentially actionable: ``...Update -- Has Dementia! pls find him \#Missing ...``, though even this example is ambiguous, as it is unclear whether it relates to an ongoing crisis or a missing-person case independent of a disaster.
+Overall, these findings demonstrate that DeBERTa is highly effective at filtering out non-actionable content even when the ground truth labels incorrectly mark such tweets as \textbf{time\_critical}. This ability is extremely valuable in real-time disaster triage, where excessive false alarms can overwhelm emergency systems and hinder the prioritization of genuine calls for rescue.
+\subsubsection{Escalating non-essential tweets}
+Since we examined tweets labeled as \textbf{time\_critical} but predicted as \textbf{non\_informative}, we now turn to the opposite case: tweets whose true label was \textbf{non\_informative} but were predicted as \textbf{time\_critical}. Although many of these tweets reference crises such as hurricanes or wildfires, DeBERTa often struggles to distinguish between actionable and non-actionable content. A common failure mode involves over-sensitivity to words associated with harm or danger. For example, the tweet ``Tattingstone suitcase murder: Police appeal over Bernard Oliver death...`` contains the word ``death'' but is entirely unrelated to an ongoing crisis, yet DeBERTa incorrectly flagged it as time\_critical. Similarly, the tweet ``At least 21 dead. Over 1 million forced into shelters. Typhoon \#Hagupit is yet...'' is tied to a real crisis but does not present any \textbf{actionable information}, such as a request for rescue or instructions for evacuation. DeBERTa nevertheless labeled it as time\_critical solely because it describes fatalities and large-scale impact.
 
-\begin{table*}
-    \begin{center}
-    \begin{tabular}{|p{12cm}|c|}
-        \hline
-        \textbf{Tweet} & \textbf{Category} \\
-        \hline
-        how many fertilizer plants are there in texas? http://t.co/es4El50Hdx & Not crisis related \\
-        \hline
-        RT @severestudios: RT @MattMilletto: \#HurricaneODILE so many crashes and crumbles. Water coming in our 5th floor hotel room. Terrifying. & Crisis related but not actionable \\
-        \hline
-        @achohelelwhy: Update - Has Dementia! pls find him \#Missing \#Joplin Charles Writer (http://on.fb.me/kHaGEY) patient at \#Greenbrier ... & Actionable but unclear \\
-        \hline
-    \end{tabular}
-    \end{center}
-    \caption{Examples of true label time\_critical, predicted label non\_informative}
-    \label{tab:qualitative_examples_tc_ni}
-\end{table*}
+However, despite this tendency to over-predict urgency, there was also one case where DeBERTa correctly identified a genuinely critical situation that had been mislabeled as non\_informative in the dataset: ``RT @anubhavsinha: Need Help for Ram, ... Stuck 5 hours west of Kathmandu w/broken left hand and leg. (cont)''. This tweet clearly expresses an urgent need for assistance, yet the original label failed to capture its time-sensitive nature. In this instance, DeBERTa appropriately elevated the tweet to \textbf{time\_critical}.
+Overall, these observations suggest that while DeBERTa frequently overestimates urgency for crisis-related but non-actionable tweets, particularly those containing words like ``dead'' or ``death'', it can also provide meaningful corrections by recognizing mislabeled yet genuinely urgent cries for help.
 
-\subsubsection{non\_informative vs time\_critical (551 Total)}
-Since we looked at tweets labeled as time\_critical but predicted as non\_informative, we now look at the opposite case: tweets where the true label was non\_informative, but were predicted as time\_critical. Although overall the tweets are related to crises such as hurricanes, wildfires, etc., it struggles with distinguishing between actionable and non-actionable items. Also, as can be seen in Table~\ref{tab:qualitative_examples_ni_tc}, DeBerta struggles with time\_critical false positives where it is over-sensitive to tweets containing words such as “dead, death, deadly” and label them as time\_critical even though they are not crisis-related. Although in general DeBerta shows a tendency to overly classify tweets as time\_critical, there was 1 tweet that was actually \textbf{time\_critical} but was mis-labeled as \textbf{non\_informative} (see Table~\ref{tab:qualitative_examples_ni_tc}. The last tweet in the table is a clear cry for help, and DeBerta correctly classified the tweet as \textbf{time\_critical}. Therefore we can conclude that DeBERTa often over-predicts the \textbf{time\_critical} label for crisis-related but non-actionable tweets, particularly those containing words like “dead” or “death”, yet also demonstrates value by correctly elevating at least one mislabeled but genuinely urgent cry for help.
-
-\begin{table*}
-    \begin{center}
-    \begin{tabular}{|p{12cm}|c|}
-        \hline
-        \textbf{Tweet} & \textbf{Category} \\
-        \hline
-        Tattingstone suitcase murder: Police appeal over Bernard Oliver death - BBC News \url{https://t.co/epTuBCczG6} & Not crisis related \\
-        \hline
-        At least 21 dead. Over 1 million forced into shelters. Typhoon \#Hagupit is yet another reminder that we have no... \url{http://t.co/je8fwbV8jr} & Crisis related but not actionable \\
-        \hline
-        RT @anubhavsinha: Need Help for Ram, my House Help for 15 years. Stuck 5 hours west of Kathmandu w/broken left hand and leg. (cont) & Critical and actionable \\
-        \hline
-    \end{tabular}
-    \end{center}
-    \caption{Examples of true label non\_informative, predicted label time\_critical}
-    \label{tab:qualitative_examples_ni_tc}
-\end{table*}
-
-\subsection{Hashtag-heavy tweets}
-A lot of tweets labeled as \textbf{support\_and\_relief} by human labelers used a lot of hashtags which makes sense because hashtags provide an easy way of information gathering. However, because we removed hashtags as part of our preprocessing, we ended up losing a lot of context for those tweets which caused DeBerta to label them as \textbf{non\_informative}. Such examples can be found in Table~\ref{tab:qualitative_examples_sr_ni}. The first tweet is correctly labeled as \textbf{support\_and\_relief} by human annotators, but after preprocessing, the tweet just becomes \texttt{looking for} which does not provide any useful information and is therefore classified as \textbf{non\_informative} by DeBerta. However, for tweets that have enough content and were falsely labeled as \textbf{support\_and\_relief} by human annotators, DeBerta successfully classifies them as \textbf{non\_informative}. Therefore, these sorts of misclassifications could be due to our preprocessing rather than an issue with DeBerta.
-
-\begin{table*}
-    \begin{center}
-    \begin{tabular}{|p{12cm}|c|}
-        \hline
-        \textbf{Tweet} & \textbf{Category} \\
-        \hline
-        \#NepalEarthquake Looking for \#CamilaYEzequiel \#Please \#RT \url{https://t.co/akLLoiOmWh} & Crisis-related and actionable by community \\
-        \hline
-        Lots of backyard work can be time consuming, but linemen do \#WhateverItTakes to get the lights back on! \#Irma… & Crisis related but not actionable \\
-        \hline
-    \end{tabular}
-    \end{center}
-    \caption{Examples of true label support\_and\_relief, predicted label non\informative}
-    \label{tab:qualitative_examples_sr_ni}
-\end{table*}
-
+\subsubsection{Mislabeling hashtag-heavy tweets}
+Tweets labeled as \textbf{support\_and\_relief} in the CrisisBench dataset frequently rely on hashtags to express meaning, or ask for assistance. This is expected, as hashtags often act as the primary mechanism for community coordination during crises. However, because our preprocessing pipeline removed hashtags entirely, many such tweets lost their core semantic content. For example, the tweet ``\#NepalEarthquake Looking for \#CamilaYEzequiel \#Please \#RT'' becomes only ``looking for'' after preprocessing and is too vague for DeBERTa to recognize as support\_and\_relief, causing it to be classified as \textbf{non\_informative}. On the contrary, messages that do not rely heavily on hashtags for context, such as ``Lots of backyard work can be time consuming, but linemen do \#WhateverItTakes to get the lights back on! \#Irma\ldots'', still maintain its original meaning and is DeBerta correctly classifies this as \textbf{non\_informative} even though it was incorrectly labeled as \textbf{support\_and\_relief} in the original dataset. This suggests that some misclassifications originate from the dataset labels rather than the model. These findings indicate that many errors could possibly be attributed to preprocessing decisions, particularly the removal of hashtags, rather than limitations of DeBERTa itself.
 
 \subsubsection{Overall Insights}
-Overall, the model excels at filtering out non-actionable content, which is highly beneficial in real disaster-response scenarios where minimizing false alarms is essential for effective triage. However, we observed several weaknesses. The model tends to overreact to specific keywords such as “help,” “dead,” “death,” or “explosion”, even when they appear in non-emergency or unrelated contexts. It also struggles with tweets in the \textbf{support\_and\_relief} category because much of their meaning is encoded in hashtags that lose semantic value during preprocessing. To improve performance, future iterations should consider preserving crisis-related hashtags so models can better capture the contextual signals needed for accurate classification.
+Overall, DeBerta excels at filtering out non-actionable content, which is highly beneficial in real disaster-response scenarios where minimizing false alarms is essential for effective triage. However, we observed several weaknesses. The model tends to overreact to specific keywords such as “help,” “dead,” “death,” or “explosion”, even when they appear in non-emergency or unrelated contexts. It also struggles with tweets in the \textbf{support\_and\_relief} category because much of their meaning is encoded in hashtags that lose semantic value during preprocessing. To improve performance, future iterations should consider preserving crisis-related hashtags so models can better capture the contextual signals needed for accurate classification.
 
 \FloatBarrier
 
