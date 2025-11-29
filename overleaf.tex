@@ -29,6 +29,7 @@
 
 %%%%%%%%% TITLE
 \title{[CS 7643] Classifying Useful Tweets during Disaster}
+% \title{CS 7643: Classifying Useful Tweets during Disaster}
 
 \author{Jinwoo Jeong\\
 {\tt\small jjeong342@gatech.edu}
@@ -163,7 +164,7 @@ We then fine-tuned a pretrained Transformer to evaluate the effect of transfer l
 
 \subsection{Model Evaluation}
 
-To ensure fair evaluation across labels, all models were trained and selected using macro \textbf{f1-score} as the primary criterion. This choice prevents inflated performance under class imbalance, where simple majority prediction can yield deceptively high accuracy. As shown in Table \ref{tab:class_distribution}, roughly 65\% of samples fall into the non\_informative class, while the remaining categories each represent only about 18\%, making accuracy an unreliable indicator. During training, we therefore monitored validation macro f1-score and applied early stopping once the score began to decline. For each model architecture, multiple hyperparameter configurations were explored, and performance was compared at the epoch immediately preceding overfitting, allowing us to evaluate models at their most generalizable state rather than at their peak training performance.
+To ensure fair evaluation across labels, all models were trained and selected using macro \textbf{f1-score} as the primary criterion. This choice prevents inflated performance under class imbalance, where simple majority prediction can yield deceptively high accuracy. As shown in Table \ref{tab:class_distribution}, roughly 65\% of samples fall into the non\_informative class, while the remaining categories each represent only about 18\%, making accuracy an unreliable indicator. During training, we therefore monitored validation macro f1-score and applied early stopping once the score began to decline. For each model architecture, multiple hyperparameter configurations were explored, and performance was compared at the epoch immediately before overfitting, allowing us to evaluate models at their most generalizable state rather than at their peak training performance.
 
 After identifying the best configuration for each model, evaluation will not rely on a single metric. Because each label carries distinct operational implications in disaster response, we perform a detailed class-wise confusion analysis, breaking predictions into true positives, false positives, false negatives, and true negatives per class. Beyond quantitative counts, we additionally examine misclassified samples qualitatively to identify recurring linguistic patterns, sources of ambiguity, and failure modes that numerical metrics alone cannot fully reveal. This approach allows us to conduct an in-depth analysis of where the models are likely to succeed and where they are likely to fail when applied to real-world crisis situations.
 
@@ -206,18 +207,12 @@ Our CNN model follows the architecture proposed in the original CrisisBench pape
 Overall, the learning behavior demonstrates that CNN is efficient and capable of capturing the structure necessary for triage-focused disaster tweet classification.
 
 \begin{figure}[h] % [t] 
-    \includegraphics[width=\linewidth]{learning_curves.png}
-    \caption{Learning curves}
-    \label{fig:learning_curves}
-\end{figure}
-
-\begin{figure}[h] % [t] 
     \includegraphics[width=\linewidth]{textcnn_validation_curve_num_filters.png}
     \caption{CNN Validation curve}
     \label{fig:cnn_val_curve}
 \end{figure}
 
-\subsubsection{Transformer}
+\subsubsection{Custom Transformer}
 
 \begin{figure}[h] % [t] 
     \includegraphics[width=\linewidth]{custom_transformer_validation_curve.png}
@@ -243,6 +238,18 @@ Overall, the learning behavior demonstrates that CNN is efficient and capable of
 % \subsubsection{Architecture}
 
 % \subsubsection{Fine-tuning}
+
+\subsubsection{Learning Curves}
+
+Figure \ref{fig:learning_curves} shows the learning curves for each model under their best-performing hyperparameter settings, with the red vertical line marking the epoch of peak validation performance. Validation F1-score reached a near-saturated level as early as the first epoch and showed minimal improvement afterward, even as training performance continued to rise. This suggests that later epochs contributed more to fitting the training data than to improving generalization. This may be due to limited dataset size (61,089 samples) and the short, low-variability nature of tweet-length inputs.
+
+This behavior aligns with known properties of CNNs and Transformer encoders. Both models can acquire discriminative features from sentence-level inputs rapidly, with CNNs capturing local n-gram patterns efficiently and Transformers modeling global context in a single attention step. Because the task involves short, self-contained text rather than long-context discourse, extensive training was likely unnecessary, and most useful features appear to have been learned within the first few epochs.
+
+\begin{figure}[h] % [t] 
+    \includegraphics[width=\linewidth]{learning_curves.png}
+    \caption{Learning curves}
+    \label{fig:learning_curves}
+\end{figure}
 
 \subsection{Quantitative Analysis}
 % \subsection{Summary of Model Performance}
@@ -312,25 +319,10 @@ Table \ref{tab:model_error_performances}
 \end{table*}
 
 \subsection{Qualitative Analysis}
-As our DeBerta model shows the best performance in terms of f1 score, we decided to perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBerta?
+As our DeBerta model shows the best performance in terms of f1 score, we decided to perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBerta? Out of 17,335 test data, DeBerta misclassified 1850 tweets. We picked a few categories of misclassifications to analyze.
+\subsubsection{time\_critical vs. non\_informative (358 Tweets)}
+We first look at tweets classified as \textbf{time\_critical} by the CrisisBench dataset, but classified as \textbf{non\_informative} by DeBerta. Table~\ref{tab:qualitative_examples_tc_ni} shows examples of such tweets. After manual inspection of 358 tweets, only one tweet could be argued as \textbf{time\_critical}, but it is unclear whether it is related to a crisis or just an isolated incident. All other 357 tweets classified as \textbf{time\_critical} by the original dataset was not critical, and rather resembled news headlines or weather reports instead of urgent calls for rescue. Therefore, we conclude that DeBERTa is highly effective at filtering out non-actionable content, which is extremely valuable for real-time crisis triage where excessive false alarms can hinder rescue prioritization.
 
-\subsection{True TC vs. Pred Non\_Informative (358 Total)}
-We first look at tweets classified as \texttt{time\_critical} by the CrisisBench dataset, DeBerta 
-
-\textbf{Summary:}
-\begin{itemize}
-    \item deberta is very good at filtering out non-actionable items which aids critical prioritization during crisis response.
-    \item classifies info similar to news-headlines as non\_informative which makes sense in our context:
-    \begin{itemize}
-        \item \#earthquake M 2.9, Puerto Rico region: September 30, 2013 01:18:04 GMT \url{http://t.co/nNh4kBIioG}
-        \item @612brisbane fisher \& camberwell streets, east brisbane. \#bigwet \url{http://t.co/9CANa7p9}
-        \item RT @sunstaronline: [WEATHER] (Updated) Typhoon \#YolandaPH makes 5th landfall over Bantayan Island, Cebu | Sun.Star: \url{http://t.co/0KY3zYswK4}
-        \item \#Earthquake at 50km WNW of Anchor Point, Alaska 2.8 M. Depth 79.6 Km. - 2013-09-27 21:01:48 UTC \url{http://t.co/DsQsXpXJBE}
-    \end{itemize}
-\end{itemize}
-
-
-\subsection{True NI vs Pred TC (551 Total)}
 \begin{table*}
     \begin{center}
     \begin{tabular}{|p{12cm}|c|}
@@ -343,14 +335,15 @@ We first look at tweets classified as \texttt{time\_critical} by the CrisisBench
         \hline
         RT @severestudios: RT @MattMilletto: \#HurricaneODILE so many crashes and crumbles. Water coming in our 5th floor hotel room. Terrifying. & Related but not actionable \\
         \hline
-        @achohelelwhy: Update - Has Dementia! pls find him \#Missing \#Joplin Charles Writer (\url{http://on.fb.me/kHaGEY}) patient at \#Greenbrier ... & Actionable \\
+        @achohelelwhy: Update - Has Dementia! pls find him \#Missing \#Joplin Charles Writer (\url{http://on.fb.me/kHaGEY}) patient at \#Greenbrier ... & Actionable but unclear \\
         \hline
     \end{tabular}
     \end{center}
     \caption{Examples of misclassified tweets with qualitative categorization}
-    \label{tab:qualitative_examples}
+    \label{tab:qualitative_examples_tc_ni}
 \end{table*}
 
+\subsubsection{non\_informative vs time\_critical (551 Total)}
 \begin{itemize}
     \item struggles with time\_critical false positives but most are still related to crises such as hurricanes, wildfires, etc.
     \begin{itemize}
