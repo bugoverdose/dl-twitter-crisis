@@ -74,7 +74,7 @@ Twitter-based classification studies span a wide range of objectives, but many o
 
 To overcome these limitations, we define a three-class classification task based on how tweets can be used during disaster response. Tweets that require immediate action (e.g., reports of injured people or infrastructure damage) should be classified as the \textbf{time-critical} class. Tweets useful for post-rescue aid (e.g., food, shelter, medical supply needs) fall under the \textbf{support-and-relief} class. Tweets that do not contain any relevant or actionable information (e.g., random online users' reactions to the disaster) are classified as \textbf{non-informative}.
 
-To solve this task, multiple deep learning models with different architectures were trained and fine-tuned to perform this three-way classification. We focus on convolutional neural networks (CNN) and transformer-based architectures, as they have previously demonstrated strong performance on crisis datasets \cite{CrisisBenchPaper, Ning, Wiegmann2020}.
+To solve this task, multiple deep learning models with different architectures were trained and fine-tuned to perform this three-way classification. We focus on convolutional neural networks (CNN) and transformer-based architectures as they have previously demonstrated strong performance on crisis datasets \cite{CrisisBenchPaper, Ning, Wiegmann2020}.
 
 If we can successfully train such a classification system, this system will help responders identify urgent information faster, remove distracting content, and allocate resources more effectively. Time-critical posts could assist 119 dispatchers and search-and-rescue teams, while support-and-relief posts could guide donation planning, shelter distribution, and medical supply delivery. In short, this would make real-time crisis information easier to use, which can directly impact human lives.
 
@@ -157,7 +157,7 @@ Transformer-based models were also included to establish a stronger baseline bey
 
 We first trained a custom encoder-only Transformer classifier from scratch, without relying on any pretrained linguistic representations. The model uses learnable token and positional embeddings followed by stacked self-attention encoder layers. Contextualized token representations are aggregated via masked mean pooling over non-padded positions and fed into a two-layer feed-forward classifier with dropout. Because this is a sentence-level classification task, no decoder is required. The encoder-only architecture is sufficient for learning useful representations. This setup allows us to measure how well the model can learn crisis-specific patterns purely from supervised training on our dataset, independent of large-scale pretraining.
 
-To examine how transfer learning improves tweet classification, we also fine-tuned a pretrained Transformer model. We selected DeBERTa \cite{DeBERTa}, specifically the newer DeBERTa-v3 variant \cite{DeBERTaV3}, which was not used in the original CrisisBench study but is recognized for strong contextual representation through disentangled attention. By comparing pretrained and scratch-trained models, we can quantify the contribution of large-scale pretraining and more comprehensively evaluate the effectiveness of Transformer architectures for humanitarian tweet classification.
+To examine how transfer learning improves tweet classification, we also fine-tuned a pretrained Transformer model, DeBERTa-v3 \cite{DeBERTaV3}, which is the most recent variant of the DeBERTa family \cite{DeBERTa}. Although it was not included in the original CrisisBench study, it is recognized for strong contextual representation through disentangled attention and improved pretraining efficiency. By evaluating both the custom Transformer and the pretrained DeBERTa-v3 model, we can directly compare learning from scratch with transfer learning, showing whether crisis-specific representations can emerge purely from supervised data and how much additional performance gain large-scale pretraining provides in our three-way task.
 
 \subsection{Model Evaluation}
 
@@ -193,7 +193,7 @@ The CNN model contains multiple adjustable hyperparameters, including the number
 
 With this configuration, the learnable parameters can be quantified as follows. The 50-dimensional GloVe embedding matrix accounts for $5000 \times 50 = 250000$ trainable weights. The three convolutional layers collectively add $\sum_{fs \in {3,4,5}} 50 \cdot (50 \cdot fs + 1) = 30150$ parameters, since each filter learns $50 \times fs$ weights plus one bias term. After max-pooling, the resulting feature vector of dimension $3 \times 50 = 150$ is passed to a linear classifier for three-way prediction, contributing $(150 \cdot 3) + 3 = 453$ additional weights. As dropout contains no trainable components, the final model contains 280,603 learnable parameters under the best configuration.
 
-Changing the number of convolution filters had the most notable impact on model capacity. As the number of filters increases, the parameter count in the convolution layers scales proportionally according to $\sum_{fs \in \{3,4,5\}} nf \cdot (50 \cdot fs + 1)$. For configurations with 25, 50, 75, and 100 filters, this corresponds to approximately 15,075, 30,150, 45,225, and 60,300 learnable parameters, respectively. As shown in Figure \ref{fig:cnn_val_curve}, varying the number of filters resulted in notable changes in validation performance. Too few filters constrain the model's ability to capture diverse n-gram patterns and semantic cues, whereas too many inflate capacity and promote overfitting relative to dataset size. In this setting, an intermediate configuration of 50 filters per kernel produced the best generalization.
+Changing the number of convolution filters had the most notable impact on model capacity. As the number of filters increases, the parameter count in the convolution layers scales proportionally according to $\sum_{fs \in \{3,4,5\}} nf \cdot (50 \cdot fs + 1)$. For configurations with 25, 50, 75, and 100 filters, this corresponds to approximately 15075, 30150, 45225, and 60300 learnable parameters, respectively. As shown in Figure \ref{fig:cnn_val_curve}, varying the number of filters resulted in notable changes in validation performance. Too few filters constrain the model's ability to capture diverse n-gram patterns and semantic cues, whereas too many inflate capacity and promote overfitting relative to dataset size. In this setting, an intermediate configuration of 50 filters per kernel produced the best generalization.
 
 \begin{figure}[h] % [t] 
     \includegraphics[width=\linewidth]{textcnn_validation_curve_num_filters.png}
@@ -202,25 +202,13 @@ Changing the number of convolution filters had the most notable impact on model 
 \end{figure}
 
 \subsection{Custom Transformer}
+The custom Transformer model has several learnable components. After each input tweet is tokenized and mapped to a sequence of token IDs, they are passed through a learnable token embedding layer and a learnable positional embedding layer that depends on the vocabulary size, the maximum token length, and the hidden size. The embedded sequence is then processed by a stack of Transformer encoder layers, each consisting of a multi-head self-attention module, a feedforward network, and two layer-normalization blocks. Finally, the output is pooled and passed through a two-layer classifier head.
 
-\textbf{Explain learnable parameters and hyperparameters, and then explain which hyperparameters were chosen using validation curve}
+The best-performing configuration used a hidden size of 256, four attention heads, two encoder layers, a feed-forward dimension of 512, a learning rate of $3\times 10^{-4}$, weight decay of 0.01, a dropout rate of 0.3, and a maximum token length of 64.
 
-Best configuration: learning rate = $3 \times 10^{-4}$, 
+With this configuration, the token embedding layer has $30{,}000 \times 256 = 7{,}680{,}000$ parameters and the positional encoding layer has $64 \times 256 = 16{,}384$ parameters. Each transformer encoder layer includes the learnable projection matrices for the query, key, value, and output projections, which together contribute $3 \times (256 \times 256 + 256) + (256 \times 256 + 256) = 263{,}168$ parameters. The feed-forward network adds $(256 \times 512 + 512) + (512 \times 256 + 256) = 262{,}912$ parameters, and the two layer-normalization modules contribute $2 \times (256 + 256) = 1{,}024$ parameters. With two encoder layers, the encoder block contributes a total of $1{,}054{,}208$ learnable parameters. Then comes the final layer norm with 512 parameters and a classifier consisting of a 256-to-256 linear layer ($(256 \times 256 + 256) = 65{,}792$ parameters), a ReLU activation and dropout \textbf{which have no learnable parameters}, and a final 256-to-3 linear layer ($(256 \times 3 + 3) = 771$ parameters). Summing all components, the total number of learnable parameters in the model is $8{,}817{,}667$.
 
-max token length = 64
-
-hidden size = 256
-
-number of attention heads = 4
-
-number of encoder layers = 2
-
-FFN inner dim = 512 
-
-dropout = 0.3
-
-optimizer = AdamW (learning rate = $3 \times 10^{-4}$, weight decay = 0.01)
-
+Changing the learning rate had the most substantial effect on validation performance. We performed a sweep over learning rates of $\{5 \times 10^{-5},\, 1 \times 10^{-4},\, 3 \times 10^{-4},\, 1 \times 10^{-3}\}$ and recorded the highest validation F1 score for each configuration. As shown in Figure \ref{fig:transformer_val_curve}, increasing the learning rate initially leads to a nearly linear improvement in F1 performance, with the model achieving its peak when $\text{lr} = 3 \times 10^{-4}$. However, once the learning rate exceeds this value, the validation F1 score begins to decrease. This behavior is expected because as we increase the learning rate, the optimizer takes excessively large steps which causes training to be unstable. This could result in sharp increases in validation loss and a drop in validation f1. Thus, the learning rate sweep reveals that moderately small learning rates help the model converge smoothly.
 
 \begin{figure}[h] % [t] 
     \includegraphics[width=\linewidth]{custom_transformer_validation_curve.png}
@@ -236,11 +224,13 @@ optimizer = AdamW (learning rate = $3 \times 10^{-4}$, weight decay = 0.01)
 
 \subsection{DeBERTa}
 % batchsize16_lr5e6
-
-Best configuration: learning rate = $5 \times 10^{-6}$, batch size = 16, weight decay = 0.01, epoch=7
+% Best configuration: learning rate = , batch size = 16, weight decay = 0.01, epoch=7
 % train\_batch\_size=16
 % eval_batch_size=16
 
+Unlike our lightweight encoder-only custom transformer model, DeBERTA-v3 is a much larger Transformer pre-trained on a massive text corpora with a vocabulary size of $128{,}000$ tokens and 98M parameters in the embedding layer; it consists of 12 layers, a hidden size of 768 and 86M backbone parameters resulting in a total of ~184M parameters \cite{DeBERTa}. Because we do not make any changes to the internal workings of the DeBERTa model, we only add parameters to the classification head to match our 3-label classification task: we add an additional $768 \times 768 + 768$ parameters for the first linear layer, and $768 \times 3 + 3$ for the second layer. Due to the sheer number of parameters in the model, we can see that the total number of learnable parameters is dictated by the pretrained DeBERTa-v3 encoder.
+
+In regards to hyperparameter tuning, we keep the model architecture fixed to the pretrained variant and tune only optimization and batch-level hyperparameters. The best-performing configuration used a learning rate of $5 \times 10^{-6}$, batch size of 16, weight decay of 0.01 and 7 epochs. Our choice of a smaller batch size and epoch count comes from the fact that our dataset has less than 100K tweets. Since the dataset is small in comaprison to the capacity of the model, we saw signs of overfitting once the model trained for more than 7 epochs and the smaller batch size allowed us to make more frequent updates per epoch. As illustrated in Figure~\ref{fig:pretrained_val_curve}, we see an initial increase in the validation f1 score as we increase the learning rate from $1 \times 10^{-6}$ to  $5 \times 10^{-6}$ but falls when we increase the rate further, indicating that a rate of $5 \times 10^{-6}$ provides the best balance between adapting the pre-trained weights and not making excessive parameter updates. Because DeBERTa-v3 has more than 100M parameters, a slight increase in the learning rate could make drastic changes in the model's internal representations and destabilize the learning process. 
 
 \begin{figure}[h] % [t] 
     \includegraphics[width=\linewidth]{pretrained_transformer_f1_score_val_curve.png}
@@ -261,32 +251,59 @@ This behavior aligns with known properties of CNNs and Transformer encoders. Bot
 \end{figure}
 
 \section{Experiments and Results}
+We measure success in two ways. We first measure and compare the validation f1 score of the three models along with the confusion matrices and decide on the best model quantitatively. We then manually inspect the predictions of the best model that differed from the true label to see if the model also did well from a qualitative manner.
 
-(10 points) How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? Justify your reasons with arguments supported by evidence and data.
+% (10 points) How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? Justify your reasons with arguments supported by evidence and data.
 
-\textbf{Important: This section should be rigorous and thorough. Present detailed information about decision you made, why you made them, and any evidence/experimentation to back them up. This is especially true if you leveraged existing architectures, pre-trained models, and code (i.e. do not just show results of fine-tuning a pre-trained model without any analysis, claims/evidence, and conclusions, as that tends to not make a strong project).}
+% \textbf{Important: This section should be rigorous and thorough. Present detailed information about decision you made, why you made them, and any evidence/experimentation to back them up. This is especially true if you leveraged existing architectures, pre-trained models, and code (i.e. do not just show results of fine-tuning a pre-trained model without any analysis, claims/evidence, and conclusions, as that tends to not make a strong project).}
 
 \subsection{Quantitative Analysis}
-% \subsection{Summary of Model Performance}
-As can be seen in Table \ref{tab:model_f1_scores}, our pretrained transformer using DeBerta-v3 showed the best performance in terms of macro F1 scores. 
+It is important to note that the original CrisisBench dataset is heavily imbalanced with the majority of the data dominated by the non\_informative class. Therefore, relying on a single prediction metric may not be suitable and metrics such as accuracy can be inflated by models that over-predict the non\_informative class. Therefore we take a look at four prediction metrics: accuracy, precision, recall, and macro f1. As can be seen in Table~\ref{tab:model_error_performances}, our pretrained transformer using DeBERTa-v3 outperforms the other models in terms of all metrics. We can therefore make a confident decision that DeBERTa performs the best in terms of quantitative performance.
 
-Table \ref{tab:model_error_performances}
+We now further expand on the quantitative analysis by looking at the confusion matrices in Table~\ref{tab:model_error_performances} where we see a large difference in the counts for the \textbf{time\_critical} class. Although DeBERTa showed the highest true positive rate for the class, it also showed the highest false positive rate. This combination indicates that the model tended to more aggressively classify tweets as time\_critical class than the other two models. This can arise from two possibilities: the model might be errorring on the side of caution and misclassifying tweets that are borderline time\_critical, or the model may be picking up subtle cues missed by the other models and actually correctly classifying a tweet that was mislabled as not critical. Another interesting point is that while DeBERTa shows the lowest false negative scores for the time\_critical and support\_and\_relief classes, it has the highest false negative for the non\_informative class, meaning that the model predicted informative tweets as non\_informative. Although at first glance this may seem like the model risks filtering out critical tweets, we will further analyze this behavior in Section~\ref{sec:qualitative}.
 
-\begin{table}[h] % [t]
+Overall, these results provide strong quantitative evidence that DeBERTa-v3 is the most effective model in terms of our classification task and that the model is better at both identifying informative crisis-related tweets and avoiding incorrect predictions. While some class-specific behaviors warrant additional analysis, the quantitative findings clearly support DeBERTa as the most reliable model.
+
+\begin{table*}
     \begin{center}
-    \begin{tabular}{|l|c|c|}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
         \hline
-        \textbf{Model} & \textbf{val f1} & \textbf{test f1} \\
+        \textbf{Model} & \textbf{Class} & \textbf{True Label} &
+        \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{TN}
+         & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
         \hline
-        CNN & 0.8266 & 0.8255 \\          
-        Transformer & 0.7979 & 0.7980 \\ 
-        DeBERTa & 0.8603 & 0.8524 \\
+        \multirow{3}{*}{Transformer}
+            & time\_critical & 3{,}040 & 1{,}999 & 521 & 1{,}041 & 13{,}774 & 
+               \multirow{3}{*}{0.8545} & 
+                \multirow{3}{*}{0.8204} & 
+                 \multirow{3}{*}{0.7807} & 
+                 \multirow{3}{*}{0.7980} \\
+            & support\_and\_relief & 3{,}040 & 2{,}274 & 630 & 766 & 13{,}665 & & & &  \\
+            & non\_informative & 11{,}255 & 10{,}539 & 1{,}372 & 716 & 4{,}708 & & & & \\
+        \hline
+        \multirow{3}{*}{CNN}
+            & time\_critical & 3{,}040 & 2{,}335 & 766 & 705 & 13{,}529 &
+              \multirow{3}{*}{0.8694} &
+              \multirow{3}{*}{0.8276} & 
+              \multirow{3}{*}{0.8237} & 
+              \multirow{3}{*}{0.8255} \\
+            & support\_and\_relief & 3{,}040 & 2{,}380 & 543 & 660 & 13{,}752 & & & & \\
+            & non\_informative & 11{,}255 & 10{,}356 & 955 & 899 & 5{,}125 & & & &  \\
+        \hline
+        \multirow{3}{*}{DeBERTa}
+            & time\_critical & 3{,}040 & 2{,}484 & 724 & 556 & 13{,}571 &
+             \multirow{3}{*}{0.8877} &
+             \multirow{3}{*}{0.8434} &
+             \multirow{3}{*}{0.8625} &
+             \multirow{3}{*}{0.8524} \\
+            & support\_and\_relief & 3{,}040 & 2{,}600 & 601 & 440 & 13{,}694 & & & &   \\
+            & non\_informative & 11{,}255 & 10{,}303 & 623 & 952 & 5{,}457 & & & &   \\
         \hline
     \end{tabular}
     \end{center}
-    \caption{Validation and Test Macro F1 scores for all three models}
-    \label{tab:model_f1_scores}
-\end{table}
+    \caption{Summary of confusion-matrix counts and overall classification performance metrics for all three models evaluated on the test set.}
+    \label{tab:model_error_performances}
+\end{table*}
 
 % \begin{table*} % [t]
 %     \begin{center}
@@ -305,36 +322,36 @@ Table \ref{tab:model_error_performances}
 %     \label{tab:model_error_performances}
 % \end{table*}
 
-\begin{table*} % [t]
-    \begin{center}
-    \begin{tabular}{|c|c|c|c|c|c|c|}
-        \hline
-         \textbf{Model} & \textbf{Class} & \textbf{True Label} & \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{TN} \\
-            \hline
-         \multirow{3}{*}{Transformer} 
-            & time\_critical & 3,040 & 1,999 & 521 & 1,041 & 13,774 \\
-            & support\_and\_relief & 3,040 & 2,274 & 630 & 766 & 13,665 \\ 
-            & non\_informative & 11,255 & 10,539 & \textbf{1,372} & 716 & 4,708 \\  
-          \hline
-         \multirow{3}{*}{CNN} 
-            & time\_critical & 3,040 & 2,335 & 766 & 705 & 13,529 \\
-            & support\_and\_relief & 3,040 & 2,380 & 543 & 660 & 13,752 \\ 
-            & non\_informative & 11,255 & 10,356 & \textbf{955} & 899 & 5,125 \\  
-          \hline
-         \multirow{3}{*}{DeBERTa} 
-            & time\_critical & 3,040 & \textbf{2,484} & 724 & 556 & 13,571 \\
-            & support\_and\_relief & 3,040 & \textbf{2,600} & 601 & 440 & 13,694 \\ 
-            & non\_informative & 11,255 & 10,303 & 623 & 952 & 5,457 \\  
-          \hline
-    \end{tabular}
-    \end{center}
-    \caption{Confusion matrix–derived counts for each class in the models' predictions}
-    % (TP=True Positives, FP=False Positives, FN=False Negatives, TN=True Negatives)
-    \label{tab:model_error_performances}
-\end{table*}
+% \begin{table*} % [t]
+%     \begin{center}
+%     \begin{tabular}{|c|c|c|c|c|c|c|}
+%         \hline
+%          \textbf{Model} & \textbf{Class} & \textbf{True Label} & \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{TN} \\
+%             \hline
+%          \multirow{3}{*}{Transformer} 
+%             & time\_critical & 3,040 & 1,999 & 521 & 1,041 & 13,774 \\
+%             & support\_and\_relief & 3,040 & 2,274 & 630 & 766 & 13,665 \\ 
+%             & non\_informative & 11,255 & 10,539 & \textbf{1,372} & 716 & 4,708 \\  
+%           \hline
+%          \multirow{3}{*}{CNN} 
+%             & time\_critical & 3,040 & 2,335 & 766 & 705 & 13,529 \\
+%             & support\_and\_relief & 3,040 & 2,380 & 543 & 660 & 13,752 \\ 
+%             & non\_informative & 11,255 & 10,356 & \textbf{955} & 899 & 5,125 \\  
+%           \hline
+%          \multirow{3}{*}{DeBERTa} 
+%             & time\_critical & 3,040 & \textbf{2,484} & 724 & 556 & 13,571 \\
+%             & support\_and\_relief & 3,040 & \textbf{2,600} & 601 & 440 & 13,694 \\ 
+%             & non\_informative & 11,255 & 10,303 & 623 & 952 & 5,457 \\  
+%           \hline
+%     \end{tabular}
+%     \end{center}
+%     \caption{Confusion matrix–derived counts for each class in the models' predictions}
+%     % (TP=True Positives, FP=False Positives, FN=False Negatives, TN=True Negatives)
+%     \label{tab:model_error_performances}
+% \end{table*}
 
-\subsection{Qualitative Analysis}
-As our DeBerta model shows the best performance in terms of F1 score, we decided to perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBerta? Out of 17,335 test data, DeBerta misclassified 1850 tweets. We picked a few categories of misclassifications to analyze.
+\subsection{Qualitative Analysis}\label{sec:qualitative}
+As our DeBERTa model shows the best performance in terms of F1 score, we decided to perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBERTa? Out of 17,335 test data, DeBERTa misclassified 1850 tweets. We picked a few categories of misclassifications to analyze.
 \subsubsection{Filtering non-essential tweets}
 We first look at tweets classified as \textbf{time\_critical} by the CrisisBench dataset but predicted as \textbf{non\_informative} by DeBERTa. After manually inspecting all 358 such tweets, we found that nearly all were incorrectly labeled as time\_critical in the original dataset and did not represent actionable, urgent, or location-specific cries for help. Many were entirely unrelated to crises, such as the tweet, ``how many fertilizer plants are there in texas?...'', which provides no emergency context. Others referenced crisis-related events but lacked any actionable content, such as ``...\#HurricaneODILE so many crashes and crumbles. Water coming in our 5th floor hotel room. Terrifying.'' While this tweet reflects a hazardous situation, it contains no request for assistance, location details, or actionable information. Out of the entire set, only a single tweet appeared potentially actionable: ``...Update -- Has Dementia! pls find him \#Missing ...``, though even this example is ambiguous, as it is unclear whether it relates to an ongoing crisis or a missing-person case independent of a disaster.
 Overall, these findings demonstrate that DeBERTa is highly effective at filtering out non-actionable content even when the ground truth labels incorrectly mark such tweets as \textbf{time\_critical}. This ability is extremely valuable in real-time disaster triage, where excessive false alarms can overwhelm emergency systems and hinder the prioritization of genuine calls for rescue.
@@ -345,10 +362,9 @@ However, despite this tendency to over-predict urgency, there was also one case 
 Overall, these observations suggest that while DeBERTa frequently overestimates urgency for crisis-related but non-actionable tweets, particularly those containing words like ``dead'' or ``death'', it can also provide meaningful corrections by recognizing mislabeled yet genuinely urgent cries for help.
 
 \subsubsection{Mislabeling hashtag-heavy tweets}
-Tweets labeled as \textbf{support\_and\_relief} in the CrisisBench dataset frequently rely on hashtags to express meaning, or ask for assistance. This is expected, as hashtags often act as the primary mechanism for community coordination during crises. However, because our preprocessing pipeline removed hashtags entirely, many such tweets lost their core semantic content. For example, the tweet ``\#NepalEarthquake Looking for \#CamilaYEzequiel \#Please \#RT'' becomes only ``looking for'' after preprocessing and is too vague for DeBERTa to recognize as support\_and\_relief, causing it to be classified as \textbf{non\_informative}. On the contrary, messages that do not rely heavily on hashtags for context, such as ``Lots of backyard work can be time consuming, but linemen do \#WhateverItTakes to get the lights back on! \#Irma\ldots'', still maintain its original meaning and is DeBerta correctly classifies this as \textbf{non\_informative} even though it was incorrectly labeled as \textbf{support\_and\_relief} in the original dataset. This suggests that some misclassifications originate from the dataset labels rather than the model. These findings indicate that many errors could possibly be attributed to preprocessing decisions, particularly the removal of hashtags, rather than limitations of DeBERTa itself.
-
+Tweets labeled as \textbf{support\_and\_relief} in the CrisisBench dataset frequently rely on hashtags to express meaning, or ask for assistance. This is expected, as hashtags often act as the primary mechanism for community coordination during crises. However, because our preprocessing pipeline removed hashtags entirely, many such tweets lost their core semantic content. For example, the tweet ``\#NepalEarthquake Looking for \#CamilaYEzequiel \#Please \#RT'' becomes only ``looking for'' after preprocessing and is too vague for DeBERTa to recognize as support\_and\_relief, causing it to be classified as \textbf{non\_informative}. On the contrary, messages that do not rely heavily on hashtags for context, such as ``Lots of backyard work can be time consuming, but linemen do \#WhateverItTakes to get the lights back on! \#Irma\ldots'', still maintain its original meaning and is DeBERTa correctly classifies this as \textbf{non\_informative} even though it was incorrectly labeled as \textbf{support\_and\_relief} in the original dataset. This suggests that some misclassifications originate from the dataset labels rather than the model. These findings indicate that many errors could possibly be attributed to preprocessing decisions, particularly the removal of hashtags, rather than limitations of DeBERTa itself.
 \subsubsection{Overall Insights}
-Overall, DeBerta excels at filtering out non-actionable content, which is highly beneficial in real disaster-response scenarios where minimizing false alarms is essential for effective triage. However, we observed several weaknesses. The model tends to overreact to specific keywords such as “help,” “dead,” “death,” or “explosion”, even when they appear in non-emergency or unrelated contexts. It also struggles with tweets in the \textbf{support\_and\_relief} category because much of their meaning is encoded in hashtags that lose semantic value during preprocessing. To improve performance, future iterations should consider preserving crisis-related hashtags so models can better capture the contextual signals needed for accurate classification.
+Overall, DeBERTa excels at filtering out non-actionable content, which is highly beneficial in real disaster-response scenarios where minimizing false alarms is essential for effective triage. However, we observed several weaknesses. The model tends to overreact to specific keywords such as “help,” “dead,” “death,” or “explosion”, even when they appear in non-emergency or unrelated contexts. It also struggles with tweets in the \textbf{support\_and\_relief} category because much of their meaning is encoded in hashtags that lose semantic value during preprocessing. To improve performance, future iterations should consider preserving crisis-related hashtags so models can better capture the contextual signals needed for accurate classification.
 
 \FloatBarrier
 
