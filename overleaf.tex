@@ -139,7 +139,7 @@ For the experiments, we use CNN and transformer-based models, as they have repea
 
 We implemented the CNN model from scratch using PyTorch. The implemented model begins with an embedding layer initialized with pretrained GloVe word vectors, which are fed into parallel 1D convolutional layers with kernel sizes of 3, 4, and 5 to capture linguistic features across different n-gram spans (see Figure \ref{fig:cnn_flowchart}). Each convolutional branch is activated with ReLU and followed by max-over-time pooling, after which the resulting feature representations are concatenated and regularized through dropout. A final fully connected layer maps the combined feature vector to the three output categories producing logits used for classification.
 
-TBA: number of parameters to be trained
+% TBA: add number of parameters to be trained?
 
 The original CrisisBench paper \cite{CrisisBenchPaper} and its public GitHub repository\footnote{\url{https://github.com/firojalam/crisis_datasets_benchmarks}} served as references for our CNN implementation. We did not reuse their source code, since it was written using Keras while our pipeline was developed in PyTorch, and we aimed to introduce several architectural modifications. In particular, unlike the original work that used word2vec embeddings, we used pretrained GloVe vectors. Because GloVe captures global co-occurrence statistics rather than only local context, it tends to produce more semantically structured word representations  \cite{Glove}. We expected this to help the model learn relationships between rare or domain-specific terms often found in crisis-related tweets, providing a stronger initialization for downstream classification.
 
@@ -152,35 +152,20 @@ Overall, this architecture is likely to be successful because it follows the wid
     \label{fig:cnn_flowchart}
 \end{figure}
 
-\subsection{Transformer}
+\subsection{Transformers}
 
-TBA - Vanilla Transformer Text Classifier: Transformer Encoder-based Text Classifier (trained from scratch)
+Transformer-based models were also included to establish a stronger baseline beyond CNNs. Due to their ability to capture long-range dependencies through self-attention, transformer architectures have achieved state-of-the-art results across many NLP tasks, including Twitter classification \cite{CrisisBenchPaper, Ning, Nguyen, Wiegmann2020}. While CNNs primarily detect local n-gram features with fixed windows, Transformers model token interactions across the entire sequence, which is advantageous when humanitarian meaning emerges from dispersed cues such as locations, casualties, or resource needs. Since the original CrisisBench reported that pretrained Transformers outperform CNNs on the original 11-way task, similar benefits can be expected in our simplified 3-class setting \cite{CrisisBenchPaper}.
 
-\subsection{Pretrained Transformer}
+As a controlled baseline, we first trained a custom encoder-only Transformer classifier from scratch, without relying on any pretrained linguistic representations. The model uses learnable token and positional embeddings followed by stacked self-attention encoder layers. Contextualized token representations are aggregated via masked mean pooling over non-padded positions and fed into a two-layer feed-forward classifier with dropout. Because this is a sentence-level classification task, no decoder is required. The encoder-only architecture is sufficient for learning useful representations. This setup allows us to measure how well the model can learn crisis-specific patterns purely from supervised training on our dataset, independent of large-scale pretraining.
 
-TBA - DeBERTa
-
-% We implemented the CNN model from scratch using PyTorch. The implemented model begins with an embedding layer initialized with pretrained GloVe word vectors, which are fed into parallel 1D convolutional layers with kernel sizes of 3, 4, and 5 to capture linguistic features across different n-gram spans (see Figure \ref{fig:cnn_flowchart}). Each convolutional branch is activated with ReLU and followed by max-over-time pooling, after which the resulting feature representations are concatenated and regularized through dropout. A final fully connected layer maps the combined feature vector to the three output categories producing logits used for classification.
-
-
-
-% Specifically, a CNN model and a transformer encoder-based text classifier, and fine-tuned a pretrained transformer.
-% \item A \textbf{custom transformer} model trained from scratch to capture global contextual relationships in the tweets.
-% \item A \textbf{pretrained transformer} model that is fine-tuned on our classification task, representing a transfer learning approach leveraging large-scale language pretraining.
-
-
-\subsection{What's New in Our Approach?}
-% The main novelty in our approach is not in the individual cleaning steps, but in the re-framing of the CrisisBench classification task itself, moving from a 11-class problem to a triage-centric 3-class problem (time\_critical, support\_and\_relief, non\_informative), which prioritizes immediate operational utility for disaster response.
-% We anticipated success because:
-% \begin{itemize}
-%     \item Target Simplification: Reducing the 11 original labels to three relevant classes directly addresses the challenge of building an actionable, real-time triage system. This simplification aligns with the primary goal of surfacing only the most critical humanitarian information during disasters.
-%     \item Standardized Cleaning: The implemented text-cleaning steps (removal of URLs, hashtags, user mentions, and non-ASCII characters) follow established best practices for natural language processing on noisy social media data. These steps help ensure that the classification models focus on the core semantic content rather than those irrelevant to humanitarian decision-making.
-% \end{itemize}
+We then fine-tuned a pretrained Transformer to evaluate the effect of transfer learning. For this, we selected DeBERTa \cite{DeBERTa}, which was not used in the original CrisisBench study but is known for strong context representation through disentangled attention. Comparing pretrained and scratch-trained variants allows us to quantify the contribution of large-scale pretraining and provides a more complete assessment of Transformer effectiveness for humanitarian tweet classification.
 
 
 \subsection{Model Evaluation}
 
-As shown in Table \ref{tab:class_distribution}, the dataset is imbalanced. Approximately 65\% of tweets were labeled as non\_informative, while the other two classes each account for only about 18\%. Under such imbalance, accuracy becomes a misleading indicator of performance because a model biased toward the majority class can still achieve a high score. To avoid this, we trained models with macro \textbf{F1-score} as the primary objective, ensuring that minority classes are weighted equally during fine-tuning.
+To ensure fair evaluation across labels, all models were trained and selected using macro \textbf{f1-score} as the primary criterion. This choice prevents inflated performance under class imbalance, where simple majority prediction can yield deceptively high accuracy. As shown in Table \ref{tab:class_distribution}, roughly 65\% of samples fall into the non\_informative class, while the remaining categories each represent only about 18\%, making accuracy an unreliable indicator. During training, we therefore monitored validation macro f1-score and applied early stopping once the score began to decline. For each model architecture, multiple hyperparameter configurations were explored, and performance was compared at the epoch immediately preceding overfitting, allowing us to evaluate models at their most generalizable state rather than at their peak training performance.
+
+After identifying the best configuration for each model, evaluation will not rely on a single metric. Because each label carries distinct operational implications in disaster response, we perform a detailed class-wise confusion analysis, breaking predictions into true positives, false positives, false negatives, and true negatives per class. Beyond quantitative counts, we additionally examine misclassified samples qualitatively to identify recurring linguistic patterns, sources of ambiguity, and failure modes that numerical metrics alone cannot fully reveal. This approach allows us to conduct an in-depth analysis of where the models are likely to succeed and where they are likely to fail when applied to real-world crisis situations.
 
 \begin{table}[h] % [b]
 \begin{center}
@@ -202,45 +187,22 @@ Total & 87,345 & 100\% \\
 \label{tab:class_distribution}
 \end{table}
 
-After identifying the best-performing model, evaluation will not rely on a single metric. Because each class carries different operational implications during disaster response, we will further analyze false positives and false negatives per class, along with qualitative inspection of misclassified samples. This enables us to assess not only overall effectiveness, but also how reliably the model differentiates urgent information, relief-related reports, and irrelevant content in real-world use.
-
-% We evaluated the performance of three distinct model architectures:
-% \begin{enumerate}
-%     \item A CNN model utilizing pre-trained GloVe embeddings to assess its ability to extract local n-gram style features.
-%     \item A custom transformer model trained from scratch to capture global contextual relationships in the tweets.
-%     \item A pretrained transformer model that is fine-tuned on our classification task, representing a transfer learning approach leveraging large-scale language pretraining.
-% \end{enumerate}
-% By comparing these models, we aim to identify the architecture that offers the best performance for real-time disaster information filtering under our three-label formulation.
-
-\subsection{Challenges}
-\textbf{TODO: ALSO TALK ABOUT PROBLEMS FACED DURING EXPERIMENTATION SUCH AS COMPUTATION LIMITS} \\
-\textit{We anticipated that the unstructured nature of social media text would lead to noise, and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training. Our very first approach to preprocessing did not work because we failed to account for rows with empty content after cleaning. This led to errors during model training, and we later added logic to remove empty rows after the cleansing process.}
-
-We thought we would have to train a long time (high epoch), but signs of overfitting were found in early stages. Dataset size wasn't big enough?
-
-At first, we expected Transformer based model to outperform CNN, but it didn't. We had to use pretrained model to outperform CNN.
-
-Difficulty in tuning at first. reusing the hyperparameters in models from CrisisBench as a starting point helped tuning.
-
-After fine-tuning, training didn't provide much difference between the models.
-
 \section{Experiments and Results}
 
 (10 points) How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? Justify your reasons with arguments supported by evidence and data.
 
 \textbf{Important: This section should be rigorous and thorough. Present detailed information about decision you made, why you made them, and any evidence/experimentation to back them up. This is especially true if you leveraged existing architectures, pre-trained models, and code (i.e. do not just show results of fine-tuning a pre-trained model without any analysis, claims/evidence, and conclusions, as that tends to not make a strong project).}
 
+\subsection{Training}
 
-\subsection{CNN}
+\subsubsection{CNN}
 
-\subsubsection{Architecture}
+\textbf{Architecture}
 Our CNN model follows the architecture proposed in the original CrisisBench paper, adapted for our three-class classification task. CNN is particularly well suited for short, noisy text such as tweets because it captures local patterns such as short phrases indicative of urgent events through convolutional filters of different sizes. The model starts with an embedding layer initialized with pre-trained GloVe word embeddings (50-dimensional), followed by multiple parallel 1D convolutional layers with filter sizes of 3, 4, and 5 to capture n-gram features at different scales (refer to Figure \ref{fig:cnn_flowchart}). Each convolutional layer uses 50 filters and applies ReLU activation, followed by max pooling over the sequence length. The outputs from all filter sizes are concatenated and passed through a dropout layer (dropout rate 0.5) before a fully connected layer that produces logits for the three classes (time\_critical, support\_and\_relief, non\_informative). The model uses a vocabulary size of 5000 and a maximum sequence length of 64 tokens.
 
-\subsubsection{Hyperparameter Tuning}
-We performed hyperparameter tuning to identify the optimal configuration for our CNN model. The hyperparameters that led to the best test F1 score (0.8255) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 32, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_val_curve}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text.
+\textbf{Hyperparameter Tuning} We performed hyperparameter tuning to identify the optimal configuration for our CNN model. The hyperparameters that led to the best test F1 score (0.8255) are as follows: filter sizes of (3, 4, 5), 50 filters per filter size, dropout rate of 0.5, batch size of 32, learning rate of $1 \times 10^{-3}$, and training for 5 epochs. We used the Adam optimizer and evaluated our model based on the validation F1 score. We also performed a validation sweep over the number of filters (25, 35, 50, 60, 75, 85, 100). The validation curve (Figure~\ref{fig:cnn_val_curve}) shows that performance increases as the number of filters grows, peaking at 50 filters and declining afterward. This pattern indicates that too many filters lead to overfitting on local n-gram patterns, reducing generalization on noisy social media text.
 
-\subsubsection{Learning and Validation Curves}
-We plotted learning curves tracking both loss and macro F1 score across training epochs for both training and validation sets which is shown in Figures \ref{fig:learning_curves} and \ref{fig:cnn_val_curve}. The curves show consistent improvement over 5 epochs, with the validation F1 score reaching 0.8266 at epoch 3. We also generated a validation curve by varying the number of filters while keeping other hyperparameters fixed, which helped us identify the optimal number of filters (50) for our model architecture. This observation reinforces that moderate-capacity CNNs are better suited for short-text classification, where excessively wide convolutional layers tend to memorize local token combinations rather than generalize.
+\textbf{Learning and Validation Curves} We plotted learning curves tracking both loss and macro F1 score across training epochs for both training and validation sets which is shown in Figures \ref{fig:learning_curves} and \ref{fig:cnn_val_curve}. The curves show consistent improvement over 5 epochs, with the validation F1 score reaching 0.8266 at epoch 3. We also generated a validation curve by varying the number of filters while keeping other hyperparameters fixed, which helped us identify the optimal number of filters (50) for our model architecture. This observation reinforces that moderate-capacity CNNs are better suited for short-text classification, where excessively wide convolutional layers tend to memorize local token combinations rather than generalize.
 Overall, the learning behavior demonstrates that CNN is efficient and capable of capturing the structure necessary for triage-focused disaster tweet classification.
 
 \begin{figure}[h] % [t] 
@@ -255,7 +217,7 @@ Overall, the learning behavior demonstrates that CNN is efficient and capable of
     \label{fig:cnn_val_curve}
 \end{figure}
 
-\subsection{Custom Transformer}
+\subsubsection{Transformer}
 
 \begin{figure}[h] % [t] 
     \includegraphics[width=\linewidth]{custom_transformer_validation_curve.png}
@@ -263,13 +225,14 @@ Overall, the learning behavior demonstrates that CNN is efficient and capable of
     \label{fig:transformer_val_curve}
 \end{figure}
 
-\subsubsection{Architecture}
+% \subsubsection{Architecture}
 
-\subsubsection{Fine-tuning}
+% \subsubsection{Fine-tuning}
 
 \FloatBarrier
 
-\subsection{Fine-tuning Pretrained Transformer}
+\subsubsection{DeBERTa}
+% Fine-tuning Pretrained Transformer}
 
 \begin{figure}[h] % [t] 
     \includegraphics[width=\linewidth]{pretrained_transformer_f1_score_val_curve.png}
@@ -277,12 +240,15 @@ Overall, the learning behavior demonstrates that CNN is efficient and capable of
     \label{fig:pretrained_val_curve}
 \end{figure}
 
-\subsubsection{Architecture}
+% \subsubsection{Architecture}
 
-\subsubsection{Fine-tuning}
+% \subsubsection{Fine-tuning}
 
-\subsection{Summary of Model Performance}
+\subsection{Quantitative Analysis}
+% \subsection{Summary of Model Performance}
 As can be seen in Table \ref{tab:model_f1_scores}, our pretrained transformer using DeBerta-v3 showed the best performance in terms of macro f1 scores. 
+
+Table \ref{tab:model_error_performances}
 
 \begin{table} % [t]
     \begin{center}
@@ -345,147 +311,116 @@ As can be seen in Table \ref{tab:model_f1_scores}, our pretrained transformer us
     \label{tab:model_error_performances}
 \end{table*}
 
+\subsection{Qualitative Analysis}
+As our DeBerta model shows the best performance in terms of f1 score, we decided to perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBerta?
 
-% \begin{table}[t]
-% \begin{center}
-% \begin{tabular}{|c|c|}
-% \hline
-% \textbf{Mapped class} & \textbf{Original CrisisBench class} \\
-% \hline
-% \multirow{6}{*}{time\_critical} 
-%     & affected\_individual \\ 
-%     \cline{2-2}
-%     & caution\_and\_advice \\ 
-%     \cline{2-2}
-%     & displaced\_and\_evacuations \\ 
-%     \cline{2-2}
-%     & infrastructure\_and\_utilities\_damage \\ 
-%     \cline{2-2}
-%     & injured\_or\_dead\_people \\ 
-%     \cline{2-2}
-%     & missing\_and\_found\_people \\
-% \hline
-% \multirow{3}{*}{support\_and\_relief} 
-%     & requests\_or\_needs \\ 
-%     \cline{2-2}
-%     & donation\_and\_volunteering \\ 
-%     \cline{2-2}
-%     & response\_efforts \\
-% \hline
-% \multirow{2}{*}{non\_informative} 
-%     & not\_humanitarian \\ 
-%     \cline{2-2}
-%     & sympathy\_and\_support \\
-% \hline
-% \end{tabular}
-% \end{center}
-% \caption{Label Mapping}
-% \label{tab:label_mapping}
-% \end{table}
+\subsection{True TC vs. Pred Non\_Informative (358 Total)}
+We first look at tweets classified as \texttt{time\_critical} by the CrisisBench dataset, DeBerta 
 
-% \section{Qualitative Analysis}
-
-% \subsection{True TC vs. Pred Non\_Informative (358 Total)}
-
-% \textbf{Useless tweets:}
-% \begin{itemize}
-%     \item how many fertilizer plants are there in texas? \url{http://t.co/es4El50Hdx}
-%     \item If ISIS wants a war, I'll bring them a war ὢ4 \url{https://t.co/V7eijo4Flk}
-% \end{itemize}
-
-% \textbf{Semi-useful but not actionable by anyone:}
-% \begin{itemize}
-%     \item RT @severestudios: RT @MattMilletto: \#HurricaneODILE so many crashes and crumbles. Water coming in our 5th floor hotel room. Terrifying. (no mention of location, can’t be seen as a cry for help)
-% \end{itemize}
-
-% \textbf{Useful and actionable:}
-% \begin{itemize}
-%     \item only one actionable item that is a cry for help, but unclear whether it’s related to a crisis: @achohelelwhy: Update - Has Dementia! pls find him \#Missing \#Joplin Charles Writer (\url{http://on.fb.me/kHaGEY}) patient at \#Greenbrier ...
-% \end{itemize}
-
-% \textbf{Summary:}
-% \begin{itemize}
-%     \item deberta is very good at filtering out non-actionable items which aids critical prioritization during crisis response.
-%     \item classifies info similar to news-headlines as non\_informative which makes sense in our context:
-%     \begin{itemize}
-%         \item \#earthquake M 2.9, Puerto Rico region: September 30, 2013 01:18:04 GMT \url{http://t.co/nNh4kBIioG}
-%         \item @612brisbane fisher \& camberwell streets, east brisbane. \#bigwet \url{http://t.co/9CANa7p9}
-%         \item RT @sunstaronline: [WEATHER] (Updated) Typhoon \#YolandaPH makes 5th landfall over Bantayan Island, Cebu | Sun.Star: \url{http://t.co/0KY3zYswK4}
-%         \item \#Earthquake at 50km WNW of Anchor Point, Alaska 2.8 M. Depth 79.6 Km. - 2013-09-27 21:01:48 UTC \url{http://t.co/DsQsXpXJBE}
-%     \end{itemize}
-% \end{itemize}
+\textbf{Summary:}
+\begin{itemize}
+    \item deberta is very good at filtering out non-actionable items which aids critical prioritization during crisis response.
+    \item classifies info similar to news-headlines as non\_informative which makes sense in our context:
+    \begin{itemize}
+        \item \#earthquake M 2.9, Puerto Rico region: September 30, 2013 01:18:04 GMT \url{http://t.co/nNh4kBIioG}
+        \item @612brisbane fisher \& camberwell streets, east brisbane. \#bigwet \url{http://t.co/9CANa7p9}
+        \item RT @sunstaronline: [WEATHER] (Updated) Typhoon \#YolandaPH makes 5th landfall over Bantayan Island, Cebu | Sun.Star: \url{http://t.co/0KY3zYswK4}
+        \item \#Earthquake at 50km WNW of Anchor Point, Alaska 2.8 M. Depth 79.6 Km. - 2013-09-27 21:01:48 UTC \url{http://t.co/DsQsXpXJBE}
+    \end{itemize}
+\end{itemize}
 
 
-% \subsection{True NI vs Pred TC (551 Total)}
-% \begin{itemize}
-%     \item struggles with time\_critical false positives but most are still related to crises such as hurricanes, wildfires, etc.
-%     \begin{itemize}
-%         \item model is able to understand the general context but struggles with distinguishing between actionable and non actionable items
-%     \end{itemize}
-%     \item deberta is over-sensitive to tweets containing words such as “dead, death, deadly” as time\_critical even though they are not crisis-related:
-%     \begin{itemize}
-%         \item Dedham Teenager Charged In Deadly Crash In Jaffery, NH: JAFFERY, NH (CBS) A Dedham teenager is facing vehicular... \url{http://t.co/6VObO432zG}
-%         \item Tattingstone suitcase murder: Police appeal over Bernard Oliver death - BBC News \url{https://t.co/epTuBCczG6}
-%     \end{itemize}
-%     \item example where deberta labeled 1 tweet as time\_critical that should actually have been time\_critical (FN):
-%     \begin{itemize}
-%         \item tweets that were classified as non\_informative on the dataset but should be time\_critical (call for rescue, etc.)
-%         \item RT @anubhavsinha: Need Help for Ram, my House Help for 15 years. Stuck 5 hours west of Kathmandu w/broken left hand and leg. (cont) http://‰Û\_
-%     \end{itemize}
-% \end{itemize}
+\subsection{True NI vs Pred TC (551 Total)}
+\begin{table*}
+    \begin{center}
+    \begin{tabular}{|p{12cm}|c|}
+        \hline
+        \textbf{Tweet} & \textbf{Category} \\
+        \hline
+        how many fertilizer plants are there in texas? \url{http://t.co/es4El50Hdx} & Not crisis related \\
+        \hline
+        If ISIS wants a war, I'll bring them a war \url{https://t.co/V7eijo4Flk} & Not crisis related \\
+        \hline
+        RT @severestudios: RT @MattMilletto: \#HurricaneODILE so many crashes and crumbles. Water coming in our 5th floor hotel room. Terrifying. & Related but not actionable \\
+        \hline
+        @achohelelwhy: Update - Has Dementia! pls find him \#Missing \#Joplin Charles Writer (\url{http://on.fb.me/kHaGEY}) patient at \#Greenbrier ... & Actionable \\
+        \hline
+    \end{tabular}
+    \end{center}
+    \caption{Examples of misclassified tweets with qualitative categorization}
+    \label{tab:qualitative_examples}
+\end{table*}
+
+\begin{itemize}
+    \item struggles with time\_critical false positives but most are still related to crises such as hurricanes, wildfires, etc.
+    \begin{itemize}
+        \item model is able to understand the general context but struggles with distinguishing between actionable and non actionable items
+    \end{itemize}
+    \item deberta is over-sensitive to tweets containing words such as “dead, death, deadly” as time\_critical even though they are not crisis-related:
+    \begin{itemize}
+        \item Dedham Teenager Charged In Deadly Crash In Jaffery, NH: JAFFERY, NH (CBS) A Dedham teenager is facing vehicular... \url{http://t.co/6VObO432zG}
+        \item Tattingstone suitcase murder: Police appeal over Bernard Oliver death - BBC News \url{https://t.co/epTuBCczG6}
+    \end{itemize}
+    \item example where deberta labeled 1 tweet as time\_critical that should actually have been time\_critical (FN):
+    \begin{itemize}
+        \item tweets that were classified as non\_informative on the dataset but should be time\_critical (call for rescue, etc.)
+        \item RT @anubhavsinha: Need Help for Ram, my House Help for 15 years. Stuck 5 hours west of Kathmandu w/broken left hand and leg. (cont) http://‰Û\_
+    \end{itemize}
+\end{itemize}
 
 
-% \subsection{True SR vs Pred TC (174 Total)}
-% \begin{itemize}
-%     \item In general over-sensitive to tweets related to crises. Tweets that don’t have a specific call for action are still labeled as time critical and it has a hard time distinguishing the word “help” where it’s asking everyone to come help and support vs “help i’m stuck here”.
-%     \begin{itemize}
-%         \item RT @govph: Via @DepEd\_PH: Help us assess school damage due to \#RubyPH. Tweet us your photos with the hashtag \#SchoolPatrolPH....
-%     \end{itemize}
+\subsection{True SR vs Pred TC (174 Total)}
+\begin{itemize}
+    \item In general over-sensitive to tweets related to crises. Tweets that don’t have a specific call for action are still labeled as time critical and it has a hard time distinguishing the word “help” where it’s asking everyone to come help and support vs “help i’m stuck here”.
+    \begin{itemize}
+        \item RT @govph: Via @DepEd\_PH: Help us assess school damage due to \#RubyPH. Tweet us your photos with the hashtag \#SchoolPatrolPH....
+    \end{itemize}
 
-%     \item but because it’s oversensitive, catches tweets marked as not time\_critical:
-%     \begin{itemize}
-%         \item RT @Afterseven: WACO EXPLOSION DISPATCH: People trapped IN the Fire I need anybody and everybody you can send. \url{http://t.co/8pMJsSwunm}
-%         \item This tweet should definitely be labeled as time critical as it is a direct cry for help
-%     \end{itemize}
-% \end{itemize}
-
-
-% \subsection{True SR vs Pred NI (269 Total)}
-% \begin{itemize}
-%     \item Struggles in cases where most of the relief efforts content is driven by hashtags:
-%     \begin{itemize}
-%         \item \#NepalEarthquake Looking for \#CamilaYEzequiel \#Please \#RT \url{https://t.co/akLLoiOmWh} $\rightarrow$ this ends up just being “looking for” after preprocessing, which makes it non\_informative as deberta predicted
-%     \end{itemize}
-
-%     \item When there is enough content for analysis, deberta does well in filtering out information:
-%     \begin{itemize}
-%         \item \#PrayForChile Praying is not going to do shit. How about actually doing something for Chile? Donating perhaps? $\rightarrow$ praying is not going to do shit how about actually doing something for chile donating perhaps
-%     \end{itemize}
-
-%     \item Conclusion: tricky with classifying support and relief because a lot of these tweets are driven by hashtags. When preprocessed, most essential information is removed which makes it hard for deberta to classify these as support and relief.
-% \end{itemize}
+    \item but because it’s oversensitive, catches tweets marked as not time\_critical:
+    \begin{itemize}
+        \item RT @Afterseven: WACO EXPLOSION DISPATCH: People trapped IN the Fire I need anybody and everybody you can send. \url{http://t.co/8pMJsSwunm}
+        \item This tweet should definitely be labeled as time critical as it is a direct cry for help
+    \end{itemize}
+\end{itemize}
 
 
-% \subsection{Overall Insights}
+\subsection{True SR vs Pred NI (269 Total)}
+\begin{itemize}
+    \item Struggles in cases where most of the relief efforts content is driven by hashtags:
+    \begin{itemize}
+        \item \#NepalEarthquake Looking for \#CamilaYEzequiel \#Please \#RT \url{https://t.co/akLLoiOmWh} $\rightarrow$ this ends up just being “looking for” after preprocessing, which makes it non\_informative as deberta predicted
+    \end{itemize}
 
-% \begin{itemize}
-%     \item The model excels at filtering out non-actionable content.
-%     \begin{itemize}
-%         \item This is highly beneficial in real disaster triage, where reducing false alarms is critical.
-%     \end{itemize}
+    \item When there is enough content for analysis, deberta does well in filtering out information:
+    \begin{itemize}
+        \item \#PrayForChile Praying is not going to do shit. How about actually doing something for Chile? Donating perhaps? $\rightarrow$ praying is not going to do shit how about actually doing something for chile donating perhaps
+    \end{itemize}
 
-%     \item Major weaknesses:
-%     \begin{itemize}
-%         \item Overreacts to words like “help,” “dead,” “death,” “explosion,” even in non-emergency contexts.
-%         \item Struggles with categories where hashtags carry semantic meaning, especially support\_and\_relief.
-%         \item Loses important location/emergency cues after preprocessing removes URLs and hashtags.
-%     \end{itemize}
+    \item Conclusion: tricky with classifying support and relief because a lot of these tweets are driven by hashtags. When preprocessed, most essential information is removed which makes it hard for deberta to classify these as support and relief.
+\end{itemize}
 
-%     \item Recommendations for improvement:
-%     \begin{itemize}
-%         \item Preserve crisis-related hashtags via a learned tokenizer or normalization step.
-%     \end{itemize}
-% \end{itemize}
+
+\subsection{Overall Insights}
+
+\begin{itemize}
+    \item The model excels at filtering out non-actionable content.
+    \begin{itemize}
+        \item This is highly beneficial in real disaster triage, where reducing false alarms is critical.
+    \end{itemize}
+
+    \item Major weaknesses:
+    \begin{itemize}
+        \item Overreacts to words like “help,” “dead,” “death,” “explosion,” even in non-emergency contexts.
+        \item Struggles with categories where hashtags carry semantic meaning, especially support\_and\_relief.
+        \item Loses important location/emergency cues after preprocessing removes URLs and hashtags.
+    \end{itemize}
+
+    \item Recommendations for improvement:
+    \begin{itemize}
+        \item Preserve crisis-related hashtags via a learned tokenizer or normalization step.
+    \end{itemize}
+\end{itemize}
+
 
 \FloatBarrier
 
@@ -520,6 +455,18 @@ Briefly discuss potential future work that the research community could focus on
 \section{Experience}
 
 \textit{(5 points) What problems did you anticipate? What problems did you encounter? Did the very first thing you tried work?}
+
+% \section{Challenges}
+\textbf{TODO: ALSO TALK ABOUT PROBLEMS FACED DURING EXPERIMENTATION SUCH AS COMPUTATION LIMITS} \\
+\textit{We anticipated that the unstructured nature of social media text would lead to noise, and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training. Our very first approach to preprocessing did not work because we failed to account for rows with empty content after cleaning. This led to errors during model training, and we later added logic to remove empty rows after the cleansing process.}
+
+We thought we would have to train a long time (high epoch), but signs of overfitting were found in early stages. Dataset size wasn't big enough?
+
+At first, we expected Transformer based model to outperform CNN, but it didn't. We had to use pretrained model to outperform CNN.
+
+Difficulty in tuning at first. reusing the hyperparameters in models from CrisisBench as a starting point helped tuning.
+
+After fine-tuning, training didn't provide much difference between the models.
 
 
 \section{Work Division}
