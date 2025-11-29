@@ -180,7 +180,7 @@ TBA - DeBERTa
 
 \subsection{Model Evaluation}
 
-As shown in Table \ref{tab:class_distribution}, the dataset is imbalanced. Approximately 65\% of tweets were labeled as non\_informative, while the other two classes each account for only about 18\%. Under such imbalance, accuracy becomes a misleading indicator of performance because a model biased toward the majority class can still achieve a high score. To avoid this, we trained models with macro F1-score as the primary objective, ensuring that minority classes are weighted equally during fine-tuning.
+As shown in Table \ref{tab:class_distribution}, the dataset is imbalanced. Approximately 65\% of tweets were labeled as non\_informative, while the other two classes each account for only about 18\%. Under such imbalance, accuracy becomes a misleading indicator of performance because a model biased toward the majority class can still achieve a high score. To avoid this, we trained models with macro \textbf{F1-score} as the primary objective, ensuring that minority classes are weighted equally during fine-tuning.
 
 \begin{table}[h] % [b]
 \begin{center}
@@ -345,6 +345,7 @@ As can be seen in Table \ref{tab:model_f1_scores}, our pretrained transformer us
     \label{tab:model_error_performances}
 \end{table*}
 
+
 % \begin{table}[t]
 % \begin{center}
 % \begin{tabular}{|c|c|}
@@ -382,8 +383,109 @@ As can be seen in Table \ref{tab:model_f1_scores}, our pretrained transformer us
 % \label{tab:label_mapping}
 % \end{table}
 
+% \section{Qualitative Analysis}
 
-\subsection{Measuring Success}
+% \subsection{True TC vs. Pred Non\_Informative (358 Total)}
+
+% \textbf{Useless tweets:}
+% \begin{itemize}
+%     \item how many fertilizer plants are there in texas? \url{http://t.co/es4El50Hdx}
+%     \item If ISIS wants a war, I'll bring them a war ὢ4 \url{https://t.co/V7eijo4Flk}
+% \end{itemize}
+
+% \textbf{Semi-useful but not actionable by anyone:}
+% \begin{itemize}
+%     \item RT @severestudios: RT @MattMilletto: \#HurricaneODILE so many crashes and crumbles. Water coming in our 5th floor hotel room. Terrifying. (no mention of location, can’t be seen as a cry for help)
+% \end{itemize}
+
+% \textbf{Useful and actionable:}
+% \begin{itemize}
+%     \item only one actionable item that is a cry for help, but unclear whether it’s related to a crisis: @achohelelwhy: Update - Has Dementia! pls find him \#Missing \#Joplin Charles Writer (\url{http://on.fb.me/kHaGEY}) patient at \#Greenbrier ...
+% \end{itemize}
+
+% \textbf{Summary:}
+% \begin{itemize}
+%     \item deberta is very good at filtering out non-actionable items which aids critical prioritization during crisis response.
+%     \item classifies info similar to news-headlines as non\_informative which makes sense in our context:
+%     \begin{itemize}
+%         \item \#earthquake M 2.9, Puerto Rico region: September 30, 2013 01:18:04 GMT \url{http://t.co/nNh4kBIioG}
+%         \item @612brisbane fisher \& camberwell streets, east brisbane. \#bigwet \url{http://t.co/9CANa7p9}
+%         \item RT @sunstaronline: [WEATHER] (Updated) Typhoon \#YolandaPH makes 5th landfall over Bantayan Island, Cebu | Sun.Star: \url{http://t.co/0KY3zYswK4}
+%         \item \#Earthquake at 50km WNW of Anchor Point, Alaska 2.8 M. Depth 79.6 Km. - 2013-09-27 21:01:48 UTC \url{http://t.co/DsQsXpXJBE}
+%     \end{itemize}
+% \end{itemize}
+
+
+% \subsection{True NI vs Pred TC (551 Total)}
+% \begin{itemize}
+%     \item struggles with time\_critical false positives but most are still related to crises such as hurricanes, wildfires, etc.
+%     \begin{itemize}
+%         \item model is able to understand the general context but struggles with distinguishing between actionable and non actionable items
+%     \end{itemize}
+%     \item deberta is over-sensitive to tweets containing words such as “dead, death, deadly” as time\_critical even though they are not crisis-related:
+%     \begin{itemize}
+%         \item Dedham Teenager Charged In Deadly Crash In Jaffery, NH: JAFFERY, NH (CBS) A Dedham teenager is facing vehicular... \url{http://t.co/6VObO432zG}
+%         \item Tattingstone suitcase murder: Police appeal over Bernard Oliver death - BBC News \url{https://t.co/epTuBCczG6}
+%     \end{itemize}
+%     \item example where deberta labeled 1 tweet as time\_critical that should actually have been time\_critical (FN):
+%     \begin{itemize}
+%         \item tweets that were classified as non\_informative on the dataset but should be time\_critical (call for rescue, etc.)
+%         \item RT @anubhavsinha: Need Help for Ram, my House Help for 15 years. Stuck 5 hours west of Kathmandu w/broken left hand and leg. (cont) http://‰Û\_
+%     \end{itemize}
+% \end{itemize}
+
+
+% \subsection{True SR vs Pred TC (174 Total)}
+% \begin{itemize}
+%     \item In general over-sensitive to tweets related to crises. Tweets that don’t have a specific call for action are still labeled as time critical and it has a hard time distinguishing the word “help” where it’s asking everyone to come help and support vs “help i’m stuck here”.
+%     \begin{itemize}
+%         \item RT @govph: Via @DepEd\_PH: Help us assess school damage due to \#RubyPH. Tweet us your photos with the hashtag \#SchoolPatrolPH....
+%     \end{itemize}
+
+%     \item but because it’s oversensitive, catches tweets marked as not time\_critical:
+%     \begin{itemize}
+%         \item RT @Afterseven: WACO EXPLOSION DISPATCH: People trapped IN the Fire I need anybody and everybody you can send. \url{http://t.co/8pMJsSwunm}
+%         \item This tweet should definitely be labeled as time critical as it is a direct cry for help
+%     \end{itemize}
+% \end{itemize}
+
+
+% \subsection{True SR vs Pred NI (269 Total)}
+% \begin{itemize}
+%     \item Struggles in cases where most of the relief efforts content is driven by hashtags:
+%     \begin{itemize}
+%         \item \#NepalEarthquake Looking for \#CamilaYEzequiel \#Please \#RT \url{https://t.co/akLLoiOmWh} $\rightarrow$ this ends up just being “looking for” after preprocessing, which makes it non\_informative as deberta predicted
+%     \end{itemize}
+
+%     \item When there is enough content for analysis, deberta does well in filtering out information:
+%     \begin{itemize}
+%         \item \#PrayForChile Praying is not going to do shit. How about actually doing something for Chile? Donating perhaps? $\rightarrow$ praying is not going to do shit how about actually doing something for chile donating perhaps
+%     \end{itemize}
+
+%     \item Conclusion: tricky with classifying support and relief because a lot of these tweets are driven by hashtags. When preprocessed, most essential information is removed which makes it hard for deberta to classify these as support and relief.
+% \end{itemize}
+
+
+% \subsection{Overall Insights}
+
+% \begin{itemize}
+%     \item The model excels at filtering out non-actionable content.
+%     \begin{itemize}
+%         \item This is highly beneficial in real disaster triage, where reducing false alarms is critical.
+%     \end{itemize}
+
+%     \item Major weaknesses:
+%     \begin{itemize}
+%         \item Overreacts to words like “help,” “dead,” “death,” “explosion,” even in non-emergency contexts.
+%         \item Struggles with categories where hashtags carry semantic meaning, especially support\_and\_relief.
+%         \item Loses important location/emergency cues after preprocessing removes URLs and hashtags.
+%     \end{itemize}
+
+%     \item Recommendations for improvement:
+%     \begin{itemize}
+%         \item Preserve crisis-related hashtags via a learned tokenizer or normalization step.
+%     \end{itemize}
+% \end{itemize}
 
 \FloatBarrier
 
