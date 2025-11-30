@@ -16,7 +16,7 @@
 % run, let it finish, and you should be clear).
 \usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
 \usepackage{multirow}
-% \usepackage{subcaption}
+\usepackage{subcaption}
 
 \cvprfinalcopy % *** Uncomment this line for the final submission
 
@@ -185,6 +185,51 @@ Total & 87,345 & 100\% \\
 
 \section{Training and Model Selection}
 
+\begin{figure*}[t]
+\centering
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{textcnn_validation_curve_num_filters.png}
+    \caption{CNN}
+    \label{fig:cnn_val_curve}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{custom_transformer_validation_curve.png}
+    \caption{Custom Transformer}
+    \label{fig:transformer_val_curve}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{pretrained_transformer_f1_score_val_curve.png}
+    \caption{DeBERTa}
+    \label{fig:pretrained_transformer_val_curve}
+\end{subfigure}
+\caption{Validation curves for all three models.}
+\label{fig:all_validation_curves}
+\end{figure*}
+
+% \begin{figure*}[t]
+% \centering
+% \begin{tabular}{ccc}
+%     \includegraphics[width=0.32\textwidth]{textcnn_validation_curve_num_filters.png} &
+%     \includegraphics[width=0.32\textwidth]{custom_transformer_validation_curve.png} &
+%     \includegraphics[width=0.32\textwidth]{pretrained_transformer_f1_score_val_curve.png}
+% \end{tabular}
+% \caption{Validation curves for all three models.}
+% \label{fig:all_validation_curves}
+% \end{figure*}
+
+% \begin{figure}[h] % [t] 
+% \vspace{-2mm}
+%     \includegraphics[width=\linewidth]{textcnn_validation_curve_num_filters.png}
+%     \caption{CNN Validation curve}
+%     \label{fig:cnn_val_curve}
+% \vspace{-4mm}
+% \end{figure}
+
 \subsection{CNN}
 
 The CNN model contains multiple adjustable hyperparameters, including the number of convolution filters, embedding dimension, kernel sizes, dropout probability, and vocabulary size. The model with highest validation F1 score had learning rate of $1 \times 10^{-3}$, 50 filters per kernel, batch size of 64, 50-dimensional GloVe embeddings, dropout of 0.5, a vocabulary size of 5,000, and a maximum input length of 64 tokens.
@@ -192,14 +237,6 @@ The CNN model contains multiple adjustable hyperparameters, including the number
 With this configuration, the learnable parameters can be quantified as follows. The 50-dimensional GloVe embedding matrix accounts for $5000 \times 50 = 250000$ trainable weights. The three convolutional layers collectively add $\sum_{fs \in {3,4,5}} 50 \cdot (50 \cdot fs + 1) = 30150$ parameters, since each filter learns $50 \times fs$ weights plus one bias term. After max-pooling, the resulting feature vector of dimension $3 \times 50 = 150$ is passed to a linear classifier for three-way prediction, contributing $(150 \cdot 3) + 3 = 453$ additional weights. As dropout contains no trainable components, the final model contains 280,603 learnable parameters under the best configuration.
 
 Changing the number of convolution filters had the most notable impact on model capacity. As the number of filters increases, the parameter count in the convolution layers scales proportionally according to $\sum_{fs \in \{3,4,5\}} nf \cdot (50 \cdot fs + 1)$. For configurations with 25, 50, 75, and 100 filters, this corresponds to approximately 15075, 30150, 45225, and 60300 learnable parameters, respectively. As shown in Figure \ref{fig:cnn_val_curve}, varying the number of filters resulted in notable changes in validation performance. Too few filters constrain the model's ability to capture diverse n-gram patterns and semantic cues, whereas too many inflate capacity and promote overfitting relative to dataset size. In this setting, an intermediate configuration of 50 filters per kernel produced the best generalization.
-
-\begin{figure}[h] % [t] 
-\vspace{-2mm}
-    \includegraphics[width=\linewidth]{textcnn_validation_curve_num_filters.png}
-    \caption{CNN Validation curve}
-    \label{fig:cnn_val_curve}
-\vspace{-4mm}
-\end{figure}
 
 \subsection{Custom Transformer}
 The custom Transformer model has several learnable components. After each input tweet is tokenized and mapped to a sequence of token IDs, they are passed through a learnable token embedding layer and a learnable positional embedding layer that depends on the vocabulary size, the maximum token length, and the hidden size. The embedded sequence is then processed by a stack of Transformer encoder layers, each consisting of a multi-head self-attention module, a feedforward network, and two layer-normalization blocks. Finally, the output is pooled and passed through a two-layer classifier head.
@@ -210,19 +247,17 @@ With this configuration, the token embedding layer has $30{,}000 \times 256 = 7{
 
 Changing the learning rate had the most substantial effect on validation performance. We performed a sweep over learning rates of $\{5 \times 10^{-5},\, 1 \times 10^{-4},\, 3 \times 10^{-4},\, 1 \times 10^{-3}\}$ and recorded the highest validation F1 score for each configuration. As shown in Figure \ref{fig:transformer_val_curve}, increasing the learning rate initially leads to a nearly linear improvement in F1 performance, with the model achieving its peak when $\text{lr} = 3 \times 10^{-4}$. However, once the learning rate exceeds this value, the validation F1 score begins to decrease. This behavior is expected because as we increase the learning rate, the optimizer takes excessively large steps which causes training to be unstable. This could result in sharp increases in validation loss and a drop in validation f1. Thus, the learning rate sweep reveals that moderately small learning rates help the model converge smoothly.
 
-\begin{figure}[h] % [t] 
-\vspace{-2mm}
-    \includegraphics[width=\linewidth]{custom_transformer_validation_curve.png}
-    \caption{Custom Transformer Validation curve}
-    \label{fig:transformer_val_curve}
-\vspace{-4mm}
-\end{figure}
+% \begin{figure}[h] % [t] 
+% \vspace{-2mm}
+%     \includegraphics[width=\linewidth]{custom_transformer_validation_curve.png}
+%     \caption{Custom Transformer Validation curve}
+%     \label{fig:transformer_val_curve}
+% \vspace{-4mm}
+% \end{figure}
 
 % \subsubsection{Architecture}
 
 % \subsubsection{Fine-tuning}
-
-\FloatBarrier
 
 \subsection{DeBERTa}
 % batchsize16_lr5e6
@@ -232,15 +267,15 @@ Changing the learning rate had the most substantial effect on validation perform
 
 Unlike our lightweight encoder-only custom transformer model, DeBERTA-v3 is a much larger Transformer pre-trained on a massive text corpora with a vocabulary size of $128{,}000$ tokens and 98M parameters in the embedding layer; it consists of 12 layers, a hidden size of 768 and 86M backbone parameters resulting in a total of ~184M parameters \cite{DeBERTa}. Because we do not make any changes to the internal workings of the DeBERTa model, we only add parameters to the classification head to match our 3-label classification task: we add an additional $768 \times 768 + 768$ parameters for the first linear layer, and $768 \times 3 + 3$ for the second layer. Due to the sheer number of parameters in the model, we can see that the total number of learnable parameters is dictated by the pretrained DeBERTa-v3 encoder.
 
-In regards to hyperparameter tuning, we keep the model architecture fixed to the pretrained variant and tune only optimization and batch-level hyperparameters. The best-performing configuration used a learning rate of $5 \times 10^{-6}$, batch size of 16, weight decay of 0.01 and 7 epochs. Our choice of a smaller batch size and epoch count comes from the fact that our dataset has less than 100K tweets. Since the dataset is small in comaprison to the capacity of the model, we saw signs of overfitting once the model trained for more than 7 epochs and the smaller batch size allowed us to make more frequent updates per epoch. As illustrated in Figure~\ref{fig:pretrained_val_curve}, we see an initial increase in the validation f1 score as we increase the learning rate from $1 \times 10^{-6}$ to  $5 \times 10^{-6}$ but falls when we increase the rate further, indicating that a rate of $5 \times 10^{-6}$ provides the best balance between adapting the pre-trained weights and not making excessive parameter updates. Because DeBERTa-v3 has more than 100M parameters, a slight increase in the learning rate could make drastic changes in the model's internal representations and destabilize the learning process. 
+In regards to hyperparameter tuning, we keep the model architecture fixed to the pretrained variant and tune only optimization and batch-level hyperparameters. The best-performing configuration used a learning rate of $5 \times 10^{-6}$, batch size of 16, weight decay of 0.01 and 7 epochs. Our choice of a smaller batch size and epoch count comes from the fact that our dataset has less than 100K tweets. Since the dataset is small in comaprison to the capacity of the model, we saw signs of overfitting once the model trained for more than 7 epochs and the smaller batch size allowed us to make more frequent updates per epoch. As illustrated in Figure \ref{fig:pretrained_transformer_val_curve}, we see an initial increase in the validation f1 score as we increase the learning rate from $1 \times 10^{-6}$ to  $5 \times 10^{-6}$ but falls when we increase the rate further, indicating that a rate of $5 \times 10^{-6}$ provides the best balance between adapting the pre-trained weights and not making excessive parameter updates. Because DeBERTa-v3 has more than 100M parameters, a slight increase in the learning rate could make drastic changes in the model's internal representations and destabilize the learning process. 
 
-\begin{figure}[h] % [t] 
-\vspace{-2mm}
-    \includegraphics[width=\linewidth]{pretrained_transformer_f1_score_val_curve.png}
-    \caption{DeBERTa Validation curve}
-    \label{fig:pretrained_val_curve}
-\vspace{-4mm}
-\end{figure}
+% \begin{figure}[h] % [t] 
+% \vspace{-2mm}
+%     \includegraphics[width=\linewidth]{pretrained_transformer_f1_score_val_curve.png}
+%     \caption{DeBERTa Validation curve}
+%     \label{fig:pretrained_val_curve}
+% \vspace{-4mm}
+% \end{figure}
 
 \subsection{Learning Curves}
 
@@ -323,9 +358,11 @@ We now further expand on the quantitative analysis by looking at the confusion m
 Overall, these results provide strong quantitative evidence that DeBERTa-v3 is the most effective model in terms of our classification task and that the model is better at both identifying informative crisis-related tweets and avoiding incorrect predictions. While some class-specific behaviors warrant additional analysis, the quantitative findings clearly support DeBERTa as the most reliable model.
 
 \subsection{Qualitative Analysis}\label{sec:qualitative}
-As our DeBERTa model shows the best quantitative performance, we now perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBERTa? We pick a few categories of misclassifications to analyze and discuss whether these misses are actual misclassifications. We first look at tweets classified as \textbf{time\_critical} by the CrisisBench dataset but predicted as \textbf{non\_informative} by DeBERTa to analyze the high false negative rates on the non\_informative class we saw in the quantitative analysis. After manually inspecting all 358 such tweets, we found that nearly all were \textbf{incorrectly labeled} as time\_critical in the original dataset and did not represent actionable, urgent, or location-specific cries for help. Many were entirely unrelated to crises, such as the tweet, ``how many fertilizer plants are there in texas?...'', which provides no emergency context. Out of the entire set, only a single tweet appeared potentially actionable: ``...Update -- Has Dementia! pls find him \#Missing ...``, though even this example is ambiguous, as it is unclear whether it relates to an ongoing crisis or a missing-person case independent of a disaster. DeBERTa therefore is highly effective at filtering out non-actionable content even when the ground truth labels incorrectly mark such tweets as \textbf{time\_critical}.
+As our DeBERTa model shows the best quantitative performance, we now perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBERTa? We pick a few categories of misclassifications to analyze and discuss whether these misses are actual misclassifications. We first look at tweets classified as \textbf{time\_critical} by the CrisisBench dataset but predicted as \textbf{non\_informative} by DeBERTa to analyze the high false negative rates on the non\_informative class we saw in the quantitative analysis. \\
 
-\paragraph{Escalating non-essential tweets}
+\noindent\textbf{De-escalating essential tweets} After manually inspecting all 358 such tweets, we found that nearly all were \textbf{incorrectly labeled} as time\_critical in the original dataset and did not represent actionable, urgent, or location-specific cries for help. Many were entirely unrelated to crises, such as the tweet, ``how many fertilizer plants are there in texas?...'', which provides no emergency context. Out of the entire set, only a single tweet appeared potentially actionable: ``...Update -- Has Dementia! pls find him \#Missing ...``, though even this example is ambiguous, as it is unclear whether it relates to an ongoing crisis or a missing-person case independent of a disaster. DeBERTa therefore is highly effective at filtering out non-actionable content even when the ground truth labels incorrectly mark such tweets as \textbf{time\_critical}.\\
+
+\noindent\textbf{Escalating non-essential tweets}
 We now turn to the opposite case: tweets whose true label was \textbf{non\_informative} but were predicted as \textbf{time\_critical}. Although many of these tweets reference crises such as hurricanes or wildfires, DeBERTa often struggles to distinguish between actionable and non-actionable content. A common failure mode involves over-sensitivity to words associated with harm or danger. For example, the tweet ``Tattingstone suitcase murder: ... Bernard Oliver death...`` contains the word ``death'' but is entirely unrelated to an ongoing crisis, yet DeBERTa incorrectly flagged it as time\_critical.
 
 In summary, our qualitative analysis reinforces the findings of our quantitative analysis: although the model does make mistakes, its errors are largely systematic (such as being consistently sensitive to certain words) and reflects genuine modeling advantages rather than coincidental trends.
@@ -333,6 +370,8 @@ In summary, our qualitative analysis reinforces the findings of our quantitative
 
 \section{Challenges}
 \textit{(5 points) What problems did you anticipate? What problems did you encounter? Did the very first thing you tried work?}
+% We encountered several sources of difficulty throughout the project starting with the dataset itself. We anticipated that the unstructured nature of social media text would lead to noise, and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training.
+% We also ran into issues in our initial preprocessing pipeline as we saw tweets that were empty after preprocessing which led to unpredictable results during model training. We later updated our preprocessing pipeline to remove empty rows. Lastly, we encountered unexpected results during model training. Initially we anticipated the Transformer model to outperform CNN, but early experiments showed the opposite: CNN achieved stronger performance and training the Transformer for more epochs quickly produced signs of overfit which may have been due to the smaller dataset. Only after switching to a pretrained DeBERTa-v3 model were we able to see signs of performance better than our CNN model. Hyperparameter tuning was similarly challenging at first, and we found that reusing the hyperparameters suggested by the original CrisisBench work provided a stable starting point. What was interesting is that even after fine-tuning, we did not see much performance difference between the runs. This may have been because our transformer model was too complex to make any meaningful differences between the various configurations.
 
 \textit{We anticipated that the unstructured nature of social media text would lead to noise, and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training. Our very first approach to preprocessing did not work because we failed to account for rows with empty content after cleaning. This led to errors during model training, and we later added logic to remove empty rows after the cleansing process.}
 
@@ -344,7 +383,7 @@ Difficulty in tuning at first. reusing the hyperparameters in models from Crisis
 
 After fine-tuning, training didn't provide much difference between the models.
 
-Because the dataset was consisted of tweets which have a character limit and lots of hashtags, there were rows with empty data after preprocessing that we had to throw out.
+
 
 \FloatBarrier
 
