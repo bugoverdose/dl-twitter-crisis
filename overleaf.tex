@@ -262,64 +262,71 @@ We measure success in two ways. We first measure and compare the validation f1 s
 
 % \textbf{Important: This section should be rigorous and thorough. Present detailed information about decision you made, why you made them, and any evidence/experimentation to back them up. This is especially true if you leveraged existing architectures, pre-trained models, and code (i.e. do not just show results of fine-tuning a pre-trained model without any analysis, claims/evidence, and conclusions, as that tends to not make a strong project).}
 
-
 \begin{table*}
     \begin{center}
-    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+    % \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
         \hline
-        \textbf{Model} & \textbf{Class} & \textbf{True Label} &
+        \textbf{Model} & \textbf{Class} & % \textbf{True Label} &
         \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{TN}
          & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
         \hline
         \multirow{3}{*}{Transformer}
-            & time\_critical & 3{,}040 & 1{,}999 & 521 & 1{,}041 & 13{,}774 & 
+            & time\_critical % & 3{,}040 
+            & 1{,}999 & 521 & 1{,}041 & 13{,}774 & 
                \multirow{3}{*}{0.8545} & 
                 \multirow{3}{*}{0.8204} & 
                  \multirow{3}{*}{0.7807} & 
                  \multirow{3}{*}{0.7980} \\
-            & support\_and\_relief & 3{,}040 & 2{,}274 & 630 & 766 & 13{,}665 & & & &  \\
-            & non\_informative & 11{,}255 & 10{,}539 & 1{,}372 & 716 & 4{,}708 & & & & \\
+            & support\_and\_relief % & 3{,}040 
+            & 2{,}274 & 630 & 766 & 13{,}665 & & & &  \\
+            & non\_informative %& 11{,}255 
+            & 10{,}539 & 1{,}372 & 716 & 4{,}708 & & & & \\
         \hline
         \multirow{3}{*}{CNN}
-            & time\_critical & 3{,}040 & 2{,}335 & 766 & 705 & 13{,}529 &
+            & time\_critical % & 3{,}040 
+            & 2{,}335 & 766 & 705 & 13{,}529 &
               \multirow{3}{*}{0.8694} &
               \multirow{3}{*}{0.8276} & 
               \multirow{3}{*}{0.8237} & 
               \multirow{3}{*}{0.8255} \\
-            & support\_and\_relief & 3{,}040 & 2{,}380 & 543 & 660 & 13{,}752 & & & & \\
-            & non\_informative & 11{,}255 & 10{,}356 & 955 & 899 & 5{,}125 & & & &  \\
+            & support\_and\_relief %& 3{,}040 
+            & 2{,}380 & 543 & 660 & 13{,}752 & & & & \\
+            & non\_informative %& 11{,}255 
+            & 10{,}356 & 955 & 899 & 5{,}125 & & & &  \\
         \hline
         \multirow{3}{*}{DeBERTa}
-            & time\_critical & 3{,}040 & 2{,}484 & 724 & 556 & 13{,}571 &
+            & time\_critical %& 3{,}040 
+            & 2{,}484 & 724 & 556 & 13{,}571 &
              \multirow{3}{*}{0.8877} &
              \multirow{3}{*}{0.8434} &
              \multirow{3}{*}{0.8625} &
              \multirow{3}{*}{0.8524} \\
-            & support\_and\_relief & 3{,}040 & 2{,}600 & 601 & 440 & 13{,}694 & & & &   \\
-            & non\_informative & 11{,}255 & 10{,}303 & 623 & 952 & 5{,}457 & & & &   \\
+            & support\_and\_relief % & 3{,}040 
+            & 2{,}600 & 601 & 440 & 13{,}694 & & & &   \\
+            & non\_informative %& 11{,}255 
+            & 10{,}303 & 623 & 952 & 5{,}457 & & & &   \\
         \hline
     \end{tabular}
     \end{center}
-    \caption{Summary of confusion-matrix counts and overall classification performance metrics for all three models evaluated on the test set.}
+    \caption{Summary of confusion-matrix counts and overall classification performance metrics for all three models evaluated on the test set. True label counts for each class in the test set: time\_critical = 3,040, support\_and\_relief = 3,040, non\_informative = 11,255.}
     \label{tab:model_error_performances}
 \vspace{-4mm}
 \end{table*}
 
 \subsection{Quantitative Analysis}
 
-It is important to note that the original CrisisBench dataset is heavily imbalanced with the majority of the data dominated by the non\_informative class. Therefore, relying on a single prediction metric may not be suitable and metrics such as accuracy can be inflated by models that over-predict the non\_informative class. Therefore we take a look at four prediction metrics: accuracy, precision, recall, and macro f1. As can be seen in Table~\ref{tab:model_error_performances}, our pretrained transformer using DeBERTa-v3 outperforms the other models in terms of all metrics. We can therefore make a confident decision that DeBERTa performs the best in terms of quantitative performance.
+As mentioned earlier, the CrisisBench dataset is imbalanced with a majority of labels in the non\_informative class. Therefore, relying on a single prediction metric may not be suitable and metrics such as accuracy can be inflated. Therefore we take a look at four prediction metrics: accuracy, precision, recall, and macro f1 to ensure that we correctly account for dataset imbalances. As can be seen in Table~\ref{tab:model_error_performances}, our pretrained transformer using DeBERTa-v3 outperforms the other models in terms of all metrics. We can therefore make a confident decision that DeBERTa performs the best in terms of quantitative performance.
 
-We now further expand on the quantitative analysis by looking at the confusion matrices in Table~\ref{tab:model_error_performances} where we see a large difference in the counts for the \textbf{time\_critical} class. Although DeBERTa showed the highest true positive rate for the class, it also showed the highest false positive rate. This combination indicates that the model tended to more aggressively classify tweets as time\_critical class than the other two models. This can arise from two possibilities: the model might be errorring on the side of caution and misclassifying tweets that are borderline time\_critical, or the model may be picking up subtle cues missed by the other models and actually correctly classifying a tweet that was mislabled as not critical. Another interesting point is that while DeBERTa shows the lowest false negative scores for the time\_critical and support\_and\_relief classes, it has the highest false negative for the non\_informative class, meaning that the model predicted informative tweets as non\_informative. Although at first glance this may seem like the model risks filtering out critical tweets, we will further analyze this behavior in Section~\ref{sec:qualitative}.
+We now further expand on the quantitative analysis by looking at the confusion matrices in Table~\ref{tab:model_error_performances} where we see a large difference in the counts for the \textbf{time\_critical} class. Although DeBERTa showed the highest true positive rate for the class, it also showed the highest false positive rate. This combination indicates that the model tends to more aggressively classify tweets as time\_critical class than the other two models. This can arise from two possibilities: the model might be errorring on the side of caution and misclassifying tweets that are borderline time\_critical, or the model may be picking up subtle cues missed by the other models and actually correctly classifying a tweet that was mislabled as not critical. Another interesting point is that while DeBERTa has the lowest false positives for the non\_informative class, meaning that the model predicted informative tweets as non\_informative. Although at first glance this may seem like the model risks filtering out critical tweets, we will further analyze this behavior in Section~\ref{sec:qualitative}.
 
 Overall, these results provide strong quantitative evidence that DeBERTa-v3 is the most effective model in terms of our classification task and that the model is better at both identifying informative crisis-related tweets and avoiding incorrect predictions. While some class-specific behaviors warrant additional analysis, the quantitative findings clearly support DeBERTa as the most reliable model.
 
 \subsection{Qualitative Analysis}\label{sec:qualitative}
-As our DeBERTa model shows the best performance in terms of F1 score, we now perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBERTa? Out of 17,335 test data, DeBERTa misclassified 1850 tweets. We pick a few categories of misclassifications to analyze and discuss whether these misses are actual misclassifications.
-
-\paragraph{Filtering non-essential tweets} We first look at tweets classified as \textbf{time\_critical} by the CrisisBench dataset but predicted as \textbf{non\_informative} by DeBERTa to analyze the high false negative rates on the non\_informative class we saw in the quantitative analysis. After manually inspecting all 358 such tweets, we found that nearly all were incorrectly labeled as time\_critical in the original dataset and did not represent actionable, urgent, or location-specific cries for help. Many were entirely unrelated to crises, such as the tweet, ``how many fertilizer plants are there in texas?...'', which provides no emergency context. Out of the entire set, only a single tweet appeared potentially actionable: ``...Update -- Has Dementia! pls find him \#Missing ...``, though even this example is ambiguous, as it is unclear whether it relates to an ongoing crisis or a missing-person case independent of a disaster. DeBERTa therefore is highly effective at filtering out non-actionable content even when the ground truth labels incorrectly mark such tweets as \textbf{time\_critical}.
+As our DeBERTa model shows the best quantitative performance, we now perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBERTa? We pick a few categories of misclassifications to analyze and discuss whether these misses are actual misclassifications. We first look at tweets classified as \textbf{time\_critical} by the CrisisBench dataset but predicted as \textbf{non\_informative} by DeBERTa to analyze the high false negative rates on the non\_informative class we saw in the quantitative analysis. After manually inspecting all 358 such tweets, we found that nearly all were \textbf{incorrectly labeled} as time\_critical in the original dataset and did not represent actionable, urgent, or location-specific cries for help. Many were entirely unrelated to crises, such as the tweet, ``how many fertilizer plants are there in texas?...'', which provides no emergency context. Out of the entire set, only a single tweet appeared potentially actionable: ``...Update -- Has Dementia! pls find him \#Missing ...``, though even this example is ambiguous, as it is unclear whether it relates to an ongoing crisis or a missing-person case independent of a disaster. DeBERTa therefore is highly effective at filtering out non-actionable content even when the ground truth labels incorrectly mark such tweets as \textbf{time\_critical}.
 
 \paragraph{Escalating non-essential tweets}
-Since we examined tweets labeled as \textbf{time\_critical} but predicted as \textbf{non\_informative}, we now turn to the opposite case: tweets whose true label was \textbf{non\_informative} but were predicted as \textbf{time\_critical}. Although many of these tweets reference crises such as hurricanes or wildfires, DeBERTa often struggles to distinguish between actionable and non-actionable content. A common failure mode involves over-sensitivity to words associated with harm or danger. For example, the tweet ``Tattingstone suitcase murder: Police appeal over Bernard Oliver death...`` contains the word ``death'' but is entirely unrelated to an ongoing crisis, yet DeBERTa incorrectly flagged it as time\_critical. This analysis reveals a tendency in our DeBERTa model to be over-sensitive to words typically associated with crises.
+We now turn to the opposite case: tweets whose true label was \textbf{non\_informative} but were predicted as \textbf{time\_critical}. Although many of these tweets reference crises such as hurricanes or wildfires, DeBERTa often struggles to distinguish between actionable and non-actionable content. A common failure mode involves over-sensitivity to words associated with harm or danger. For example, the tweet ``Tattingstone suitcase murder: ... Bernard Oliver death...`` contains the word ``death'' but is entirely unrelated to an ongoing crisis, yet DeBERTa incorrectly flagged it as time\_critical.
 
 In summary, our qualitative analysis reinforces the findings of our quantitative analysis: although the model does make mistakes, its errors are largely systematic (such as being consistently sensitive to certain words) and reflects genuine modeling advantages rather than coincidental trends.
 
