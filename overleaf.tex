@@ -209,7 +209,7 @@ Total & 87,345 & 100\% \\
     \caption{DeBERTa}
     \label{fig:pretrained_transformer_val_curve}
 \end{subfigure}
-\caption{Validation curves for all three models.}
+\caption{Validation curves for all three models (see Table \ref{tab:val_curve_performance_models} in appendix for details)}
 \label{fig:all_validation_curves}
 \end{figure*}
 
@@ -387,7 +387,57 @@ The Github repository for our final project is at:
 All code for our experiments can be found in our Github repository \url{https://github.com/bugoverdose/dl-twitter-crisis}.
 
 
-\section{Hyperparameter Tuning}
+\section{Validation Curve Supplementary}
+
+\begin{table}[h]
+\centering
+\begin{subtable}{0.9\linewidth}
+\centering
+    \begin{tabular}{|l|l|l|l|}
+    \hline
+        number of filters & epoch & train\_f1 & val\_f1 \\ \hline
+        25  & 6 & 0.8490 & 0.8258 \\ \hline
+        50  & 4 & 0.8873 & 0.8266 \\ \hline
+        75  & 5 & 0.8593 & 0.8253 \\ \hline
+        100 & 5 & 0.8593 & 0.8247 \\ \hline
+    \end{tabular}
+    \subcaption{CNN}
+    \label{tab:cnn}
+\end{subtable}
+
+\vspace{5mm}
+
+\begin{subtable}{0.9\linewidth}
+\centering
+    \begin{tabular}{|l|l|l|l|}
+    \hline
+        learning rate & epoch & train\_f1 & val\_f1 \\ \hline
+        1e-4 & 3 & 0.7992 & 0.7676 \\ \hline
+        3e-4 & 3 & 0.8363 & 0.7920 \\ \hline
+        1e-3 & 4 & 0.8171 & 0.7793 \\ \hline
+    \end{tabular}
+    \caption{Custom Transformer}
+    \label{tab:transformer}
+\end{subtable}
+
+\vspace{5mm}
+
+\begin{subtable}{0.9\linewidth}
+\centering
+    \begin{tabular}{|l|l|l|l|}
+    \hline
+        learning rate & epoch & train\_f1 & val\_f1 \\ \hline
+        1e-6 & 16 & 0.9570 & 0.8583 \\ \hline
+        5e-6 & 7 & 0.9436 & 0.8603 \\ \hline
+        1e-5 & 5 & 0.9675 & 0.8584 \\ \hline
+        2e-5 & 3 & 0.9535 & 0.8579 \\ \hline
+    \end{tabular}
+    \subcaption{DeBERTa}
+    \label{tab:deberta}
+\end{subtable}
+\caption{Summary of the epoch and performance associated with each point plotted in the validation curves for CNN, Custom Transformer, and DeBERTa models.}
+\label{tab:val_curve_performance_models}
+\end{table}
 
 % \begin{table}[h] % [t]
 % \centering
@@ -407,31 +457,44 @@ All code for our experiments can be found in our Github repository \url{https://
 %     \caption{CNN Snippet of hyperparameter tuning values}
 % \end{table}
 
-\begin{table}[h] % [t]
-\centering
-    \begin{tabular}{|l|l|l|l|}
-    \hline
-        learning rate & epoch & train\_f1 & val\_f1 \\ \hline
-        5e-5 & 8 & 0.8562 & 0.7894 \\ \hline
-        1e-4 & 3 & 0.7992 & 0.7676 \\ \hline
-        3e-4 & 0 & 0 & 0 \\ \hline
-        1e-3 & 0 & 0 & 0 \\ \hline
-    \end{tabular}
-    \caption{Custom Transformer}
-\end{table}
+% \begin{table}[h]
+% \centering
+%     \begin{tabular}{|l|l|l|l|}
+%     \hline
+%         \# filters & epoch & train\_f1 & val\_f1 \\ \hline
+%         25  & 6 & 0.8490 & 0.8258 \\ \hline
+%         50  & 4 & 0.8873 & 0.8266 \\ \hline
+%         75  & 5 & 0.8593 & 0.8253 \\ \hline
+%         100 & 5 & 0.8593 & 0.8247 \\ \hline
+%     \end{tabular}
+%     \caption{CNN}
+% \end{table}
 
-\begin{table}[h] % [t]
-\centering
-    \begin{tabular}{|l|l|l|l|}
-    \hline
-        learning rate & epoch & train\_f1 & val\_f1 \\ \hline
-        1e-6 & 16 & 0.9570 & 0.8583 \\ \hline
-        5e-6 & 7 & 0.9436 & 0.8603 \\ \hline
-        1e-5 & 5 & 0.9675 & 0.8584 \\ \hline
-        2e-5 & 3 & 0.9535 & 0.8579 \\ \hline
-    \end{tabular}
-    \caption{DeBERTa}
-\end{table}
+% \begin{table}[h] % [t]
+% \centering
+%     \begin{tabular}{|l|l|l|l|}
+%     \hline
+%         learning rate & epoch & train\_f1 & val\_f1 \\ \hline
+%         1e-4 & 3 & 0.7992 & 0.7676 \\ \hline
+%         3e-4 & 3 & 0.8363 & 0.7920 \\ \hline
+%         1e-3 & 4 & 0.8171 & 0.7793 \\ \hline
+%     \end{tabular}
+%     \caption{Custom Transformer}
+% \end{table}
+
+% \begin{table}[h] % [t]
+% \centering
+%     \begin{tabular}{|l|l|l|l|}
+%     \hline
+%         learning rate & epoch & train\_f1 & val\_f1 \\ \hline
+%         1e-6 & 16 & 0.9570 & 0.8583 \\ \hline
+%         5e-6 & 7 & 0.9436 & 0.8603 \\ \hline
+%         1e-5 & 5 & 0.9675 & 0.8584 \\ \hline
+%         2e-5 & 3 & 0.9535 & 0.8579 \\ \hline
+%     \end{tabular}
+%     \caption{DeBERTa}
+% \end{table}
+
 
 \end{document}
 
