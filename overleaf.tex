@@ -48,7 +48,7 @@ Jade Kim\\
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-    The ability to classify and prioritize tweets during crises is essential for emergency responders as they need to be able to sort through and prioritize information. Many studies have explored twitter-based classification but chose categories that were too broad (informative, non-informative) or too specific which makes prioritization harder. In this project we re-define the classification problem as a three-class task (time\_critical, support\_and\_relief, non\_informative) and explore the performance of three different deep learning models, a transformer model and a CNN model built from scratch, and a pretrained Transformer using DeBERTa-v3. We report our experiences and challenges building and training the models and perform quantitative and qualitative analyses to explain why the pretrained Transformer is most suitable for our multi-label classification task.
+    The ability to classify and prioritize tweets during crises is essential for emergency responders as they need to be able to sort through and prioritize information. Many studies have explored twitter-based classification but chose categories that were either too broad (informative vs. non-informative) or too granular which made prioritization harder. In this project we re-define the classification problem as a three-class task (time\_critical, support\_and\_relief, non\_informative) and explore the performance of three different deep learning models, a transformer model and a CNN model built from scratch, and a pretrained Transformer using DeBERTa-v3. We report our experiences and challenges building and training the models and perform quantitative and qualitative analyses to explain why the pretrained Transformer is most suitable for our multi-label classification task.
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
@@ -58,9 +58,9 @@ Jade Kim\\
 % (5 points) How is it done today, and what are the limits of current practice?
 % (5 points) Who cares? If you are successful, what difference will it make?
 
-In the event of a disaster, valuable real-time information can be found on social media platforms such as Twitter (now known as X) \cite{TwitterInCrisis}. Time-critical information, such as reports of injured or trapped people, is essential for minimizing casualties. Information about food, water, medical supplies, and shelter is also important for assisting survivors and supporting relief efforts. However, identifying this useful information within the overwhelming stream of online messages is difficult and time-consuming because it is mixed with many irrelevant or emotional reactions that do not contribute to response efforts \cite{BigCrisisData}.
+In the event of a disaster, valuable real-time information can be found on social media platforms such as Twitter (now known as X) \cite{TwitterInCrisis}. Time-critical information, such as reports of injured or trapped people, is essential for minimizing casualties. Information about food, water, medical supplies, and shelter is also important for assisting survivors and supporting relief efforts. However, identifying useful information within the overwhelming stream of online messages is difficult and time-consuming because it is mixed with many irrelevant or emotional reactions that do not contribute to response efforts \cite{BigCrisisData}.
 
-Researchers have therefore built systems that analyze social media during crises. Much of this work has focused on Twitter, using it for early disaster detection, situational awareness, and extracting actionable information \cite{CrisisBenchPaper, TwitterInCrisis}. A major line of research involves tweet classification, enabled by large annotated datasets such as CrisisBench \cite{CrisisBenchPaper}, CrisisLex \cite{Crisislex}, CrisisNLP \cite{CrisisNLP}, and CrisisMMD \cite{CrisisMMD}.
+Researchers have therefore built systems that analyze social media data during crises. Much of this work has focused on Twitter, using it for early disaster detection, situational awareness, and extracting actionable information \cite{CrisisBenchPaper, TwitterInCrisis}. A major line of research involves tweet classification, enabled by large annotated datasets such as CrisisBench \cite{CrisisBenchPaper}, CrisisLex \cite{Crisislex}, CrisisNLP \cite{CrisisNLP}, and CrisisMMD \cite{CrisisMMD}.
 
 Twitter-based classification studies span a wide range of objectives, but many of them fall under two approaches. The first is informativeness classification, which simply distinguishes useful messages from non-useful ones. This binary classification helps filter noise, but it does not tell responders \textit{what} type of help is needed. The second approach is humanitarian category classification, which assigns tweets to detailed label types (e.g., injuries, missing persons, infrastructure damage). This is more descriptive, but can also create confusion when categories overlap or are too numerous. For example, a tweet describing an injured person trapped beneath collapsed debris fits both ``injured'' and ``infrastructure damage,'' but standard models force only one choice, which can reduce practical usability \cite{CrisisBenchPaper}.
 
@@ -68,7 +68,7 @@ To overcome these limitations, we define a three-class classification task based
 
 To solve this task, multiple deep learning models with different architectures were trained and fine-tuned to perform this three-way classification. We focus on convolutional neural networks (CNN) and transformer-based architectures as they have previously demonstrated strong performance on crisis datasets \cite{CrisisBenchPaper, Ning, Wiegmann2020}.
 
-If we can successfully train such a classification system, this system will help responders identify urgent information faster, remove distracting content, and allocate resources more effectively. Time-critical posts could assist 119 dispatchers and search-and-rescue teams, while support-and-relief posts could guide donation planning, shelter distribution, and medical supply delivery. In short, this would make real-time crisis information easier to use, which can directly impact human lives.
+If we can successfully train such a classification system, this system will help responders identify urgent information faster, remove distracting content, and allocate resources more effectively. Time-critical posts could assist 911 dispatchers and search-and-rescue teams, while support-and-relief posts could guide donation planning, shelter distribution, and medical supply delivery. In short, this would make real-time crisis information easier to use, which can directly impact human lives.
 
 \subsection{Dataset}
 
@@ -121,7 +121,7 @@ For our project, we use the English portion of the CrisisBench dataset for human
 \vspace{-3mm}
 \end{table}
 
-All tweets were preprocessed prior to modeling. URLs were removed because they do not provide meaningful semantic information \cite{URLRemoval}. Twitter-specific tokens such as hashtags (e.g., \#PrayForParis), usernames, and retweet markers (e.g., RT @BreakingNews) were removed. We further removed symbols, emoticons, invisible and non-ASCII characters, and punctuation, following the preprocessing strategy described in the CrisisBench paper \cite{CrisisBenchPaper}. All text was lowercased to reduce vocabulary dimensionality while maintaining semantic validity \cite{TextRemoval}. Finally, 110 tweets were discarded because they contained empty strings or duplicated content, resulting in 87,345 remaining samples. Following the original data splits provided by CrisisBench, the final dataset consisted of 61,089 training samples, 8,921 validation samples, and 17,335 test samples. These subsets roughly account for 70\%, 10\%, and 20\% of the total dataset, respectively.
+All tweets were preprocessed prior to modeling. URLs were removed because they do not provide meaningful semantic information \cite{URLRemoval}. Twitter-specific tokens such as hashtags (e.g., \#PrayForParis), usernames, and retweet markers (e.g., RT @BreakingNews) were removed. We also removed symbols, emoticons, invisible and non-ASCII characters, and punctuation, following the preprocessing strategy described in the CrisisBench paper \cite{CrisisBenchPaper}. All text was lowercased to reduce vocabulary dimensionality while maintaining semantic validity \cite{TextRemoval}. Finally, 110 tweets were discarded because they contained empty strings or duplicated content, resulting in 87,345 remaining samples. Following the original data splits provided by CrisisBench, the final dataset consisted of 61,089 training samples, 8,921 validation samples, and 17,335 test samples. These subsets roughly account for 70\%, 10\%, and 20\% of the total dataset, respectively.
 
 \section{Approach}
 
@@ -133,9 +133,9 @@ For the experiments, we use CNN and transformer-based models, as they have repea
 
 \subsection{CNN}
 
-We implemented the CNN model from scratch using PyTorch. The implemented model begins with an embedding layer initialized with pretrained GloVe word vectors, which are fed into parallel 1D convolutional layers with kernel sizes of 3, 4, and 5 to capture linguistic features across different n-gram spans (see Figure \ref{fig:cnn_flowchart}). Each convolutional branch is activated with ReLU and followed by max-over-time pooling, after which the resulting feature representations are concatenated and regularized through dropout. A final fully connected layer maps the combined feature vector to the three output categories producing logits used for classification.
+We implemented the CNN model from scratch using PyTorch. The implemented model begins with an embedding layer initialized with pretrained GloVe word vectors, which are fed into parallel 1D convolutional layers with kernel sizes of 3, 4, and 5 to capture linguistic features across different n-gram spans (see Figure \ref{fig:cnn_flowchart}). Each convolutional branch is activated with ReLU and followed by max-over-time pooling, after which the resulting feature representations are concatenated and regularized through dropout. A final fully connected layer maps the combined feature vector to the three output categories producing the logits used for classification.
 
-The original CrisisBench paper \cite{CrisisBenchPaper} and its public GitHub repository\footnote{\url{https://github.com/firojalam/crisis_datasets_benchmarks}} served as references for our CNN implementation. We did not reuse their source code, since it was written using Keras while our pipeline was developed in PyTorch, and we aimed to introduce several architectural modifications. In particular, unlike the original work that used word2vec embeddings, we used pretrained GloVe vectors. Because GloVe captures global co-occurrence statistics rather than only local context, it tends to produce more semantically structured word representations  \cite{Glove}. We expected this to help the model learn relationships between rare or domain-specific terms often found in crisis-related tweets, providing a stronger initialization for downstream classification.
+The original CrisisBench paper \cite{CrisisBenchPaper} and its public GitHub repository\footnote{\url{https://github.com/firojalam/crisis_datasets_benchmarks}} served as references for our CNN implementation. We did not reuse their source code, since it was written using Keras while our pipeline was developed in PyTorch, and we aimed to introduce several architectural modifications. In particular, unlike the original work that used word2vec embeddings, we used pretrained GloVe vectors which tend to produce more semantically structured word representations by capturing global co-occurrence statistics \cite{Glove}. We expected this to help the model learn relationships between rare or domain-specific terms often found in crisis-related tweets, providing a stronger initialization for downstream classification.
 
 \begin{figure}[h]
 \vspace{-1mm}
@@ -152,13 +152,15 @@ Overall, this architecture is likely to be successful because it follows the wid
 
 Transformer-based models were also included to establish a stronger baseline beyond CNNs. Due to their ability to capture long-range dependencies through self-attention, transformer architectures have achieved state-of-the-art results across many NLP tasks, including Twitter classification \cite{CrisisBenchPaper, Ning, Nguyen, Wiegmann2020}. While CNNs primarily detect local n-gram features with fixed windows, Transformers model token interactions across the entire sequence, which is advantageous when humanitarian meaning emerges from dispersed cues such as locations, casualties, or resource needs. Since the original CrisisBench reported that pretrained Transformers outperform CNNs on the original 11-way task, similar benefits can be expected in our simplified 3-class setting \cite{CrisisBenchPaper}.
 
-We first trained a custom encoder-only Transformer classifier from scratch, without relying on any pretrained linguistic representations. The model uses learnable token and positional embeddings followed by stacked self-attention encoder layers. Contextualized token representations are aggregated via masked mean pooling over non-padded positions and fed into a two-layer feed-forward classifier with dropout. Because this is a sentence-level classification task, no decoder is required. The encoder-only architecture is sufficient for learning useful representations. This setup allows us to measure how well the model can learn crisis-specific patterns purely from supervised training on our dataset, independent of large-scale pretraining.
+We first trained a custom encoder-only Transformer classifier from scratch, without relying on pretrained linguistic representations. Raw tweets were tokenized into subword IDs and embedded via learnable token and positional matrices, whose size is determined by the vocabulary, sequence length, and hidden dimension. These embeddings pass through stacked Transformer encoder blocks, each comprising multi-head self-attention, a position-wise feed-forward layer, and two layer-normalization steps with residual connections. The resulting contextual representations are passed through an additional layer-normalization step, then aggregated via masked mean pooling over valid tokens and fed into a two-layer feed-forward classifier with dropout. As this is a sentence-level task, no decoder is required. The encoder alone suffices for semantic extraction. This configuration allows us to evaluate how effectively a Transformer learns crisis-specific patterns purely through supervised training, independent of large-scale pretraining.
 
-To examine how transfer learning improves tweet classification, we also fine-tuned a pretrained Transformer model, DeBERTa-v3 \cite{DeBERTaV3}, which is the most recent variant of the DeBERTa family \cite{DeBERTa}. Although it was not included in the original CrisisBench study, it is recognized for strong contextual representation through disentangled attention and improved pretraining efficiency. By evaluating both the custom Transformer and the pretrained DeBERTa-v3 model, we can directly compare learning from scratch with transfer learning, showing whether crisis-specific representations can emerge purely from supervised data and how much additional performance gain large-scale pretraining provides in our three-way task.
+To examine how transfer learning improves tweet classification, we also fine-tune a pretrained Transformer model, DeBERTa-v3 \cite{DeBERTaV3}, which is the most recent variant of the DeBERTa family \cite{DeBERTa}. Although the model was not included in the original CrisisBench study, it is recognized for strong contextual representation through disentangled attention and improved pretraining efficiency. By evaluating both the custom Transformer and the pretrained DeBERTa-v3 model, we can directly compare learning from scratch with transfer learning, analyzing whether crisis-specific representations can emerge purely from supervised data and how much additional performance gain large-scale pretraining provides in our three-way task.
 
 \subsection{Model Evaluation}
 
-Training for all three architectures was conducted using the AdamW optimizer with CrossEntropyLoss, following standard practice for multi-class text classification. To ensure fair evaluation across labels, all models were trained and selected using macro \textbf{f1-score} as the primary criterion. This choice prevents inflated performance under class imbalance, where simple majority prediction can yield deceptively high accuracy. As shown in Table \ref{tab:class_distribution}, roughly 65\% of samples fall into the non\_informative class, while the remaining categories each represent only about 18\%, making accuracy an unreliable indicator. During training, we therefore monitored validation macro f1-score and applied early stopping once the score began to decline. For each model architecture, multiple hyperparameter configurations were explored, and performance was compared at the epoch immediately before overfitting, allowing us to evaluate models at their most generalizable state rather than at their peak training performance.
+All models were optimized using AdamW with cross-entropy loss, consistent with standard multi-class text classification practice. However, the dataset is strongly imbalanced. Approximately 65\% of samples are labeled \textit{non\_informative}, while each minority class accounts for only about 18\% (Table \ref{tab:class_distribution}). Under such imbalance, accuracy alone becomes a misleading objective because a classifier favoring the majority label may appear to perform well despite poor minority-class recognition. To avoid this bias, we adopted macro \textbf{F1 score} as the primary training and model-selection metric.
+
+Training was monitored using validation macro F1-score, and we identified the optimal checkpoint as the epoch immediately before the validation score declined. Although training was not halted early, this selection strategy allowed us to evaluate each model at its most stable generalization point rather than at the peak of training performance, which may reflect overfitting. For every architecture, multiple hyperparameter configurations were tested, and results were compared using this pre-degradation validation checkpoint to ensure a fair and capacity-aware assessment.
 
 After identifying the best configuration for each model, evaluation will not rely on a single metric. Because each label carries distinct operational implications in disaster response, we perform a detailed class-wise confusion analysis, breaking predictions into true positives, false positives, false negatives, and true negatives per class. Beyond quantitative counts, we additionally examine misclassified samples qualitatively to identify recurring linguistic patterns, sources of ambiguity, and failure modes that numerical metrics alone cannot fully reveal. This approach allows us to conduct an in-depth analysis of where the models are likely to succeed and where they are likely to fail when applied to real-world crisis situations.
 
@@ -211,25 +213,6 @@ Total & 87,345 & 100\% \\
 \label{fig:all_validation_curves}
 \end{figure*}
 
-% \begin{figure*}[t]
-% \centering
-% \begin{tabular}{ccc}
-%     \includegraphics[width=0.32\textwidth]{textcnn_validation_curve_num_filters.png} &
-%     \includegraphics[width=0.32\textwidth]{custom_transformer_validation_curve.png} &
-%     \includegraphics[width=0.32\textwidth]{pretrained_transformer_f1_score_val_curve.png}
-% \end{tabular}
-% \caption{Validation curves for all three models.}
-% \label{fig:all_validation_curves}
-% \end{figure*}
-
-% \begin{figure}[h] % [t] 
-% \vspace{-2mm}
-%     \includegraphics[width=\linewidth]{textcnn_validation_curve_num_filters.png}
-%     \caption{CNN Validation curve}
-%     \label{fig:cnn_val_curve}
-% \vspace{-4mm}
-% \end{figure}
-
 \subsection{CNN}
 
 The CNN model contains multiple adjustable hyperparameters, including the number of convolution filters, embedding dimension, kernel sizes, dropout probability, and vocabulary size. The model with highest validation F1 score had learning rate of $1 \times 10^{-3}$, 50 filters per kernel, batch size of 64, 50-dimensional GloVe embeddings, dropout of 0.5, a vocabulary size of 5,000, and a maximum input length of 64 tokens.
@@ -239,43 +222,20 @@ With this configuration, the learnable parameters can be quantified as follows. 
 Changing the number of convolution filters had the most notable impact on model capacity. As the number of filters increases, the parameter count in the convolution layers scales proportionally according to $\sum_{fs \in \{3,4,5\}} nf \cdot (50 \cdot fs + 1)$. For configurations with 25, 50, 75, and 100 filters, this corresponds to approximately 15075, 30150, 45225, and 60300 learnable parameters, respectively. As shown in Figure \ref{fig:cnn_val_curve}, varying the number of filters resulted in notable changes in validation performance. Too few filters constrain the model's ability to capture diverse n-gram patterns and semantic cues, whereas too many inflate capacity and promote overfitting relative to dataset size. In this setting, an intermediate configuration of 50 filters per kernel produced the best generalization.
 
 \subsection{Custom Transformer}
-The custom Transformer model has several learnable components. After each input tweet is tokenized and mapped to a sequence of token IDs, they are passed through a learnable token embedding layer and a learnable positional embedding layer that depends on the vocabulary size, the maximum token length, and the hidden size. The embedded sequence is then processed by a stack of Transformer encoder layers, each consisting of a multi-head self-attention module, a feedforward network, and two layer-normalization blocks. Finally, the output is pooled and passed through a two-layer classifier head.
 
-The best-performing configuration used a hidden size of 256, four attention heads, two encoder layers, a feed-forward dimension of 512, a learning rate of $3\times 10^{-4}$, weight decay of 0.01, a dropout rate of 0.3, and a maximum token length of 64.
+The Transformer model includes several hyperparameters, such as the hidden embedding dimension, number of attention heads, number of encoder layers, feed-forward network width, maximum input sequence length, dropout probability, weight decay, and learning rate. The best configuration used a hidden size of 256, four attention heads, two encoder layers, a feed-forward dimension of 512, a learning rate of $3\times 10^{-4}$, weight decay of 0.01, a dropout rate of 0.3,  a vocabulary size of 30,000, and a maximum token length of 64.
 
-With this configuration, the token embedding layer has $30{,}000 \times 256 = 7{,}680{,}000$ parameters and the positional encoding layer has $64 \times 256 = 16{,}384$ parameters. Each transformer encoder layer includes the learnable projection matrices for the query, key, value, and output projections, which together contribute $3 \times (256 \times 256 + 256) + (256 \times 256 + 256) = 263{,}168$ parameters. The feed-forward network adds $(256 \times 512 + 512) + (512 \times 256 + 256) = 262{,}912$ parameters, and the two layer-normalization modules contribute $2 \times (256 + 256) = 1{,}024$ parameters. With two encoder layers, the encoder block contributes a total of $1{,}054{,}208$ learnable parameters. Then comes the final layer norm with 512 parameters and a classifier consisting of a 256-to-256 linear layer ($(256 \times 256 + 256) = 65{,}792$ parameters), a ReLU activation and dropout \textbf{which have no learnable parameters}, and a final 256-to-3 linear layer ($(256 \times 3 + 3) = 771$ parameters). Summing all components, the total number of learnable parameters in the model is $8{,}817{,}667$.
+With this configuration, the token embedding layer contains $30{,}000 \times 256 = 7{,}680{,}000$ parameters and the positional embedding layer contains $64 \times 256 = 16{,}384$ parameters. Each encoder layer includes $3 \times (256 \times 256 + 256) + (256 \times 256 + 256) = 263{,}168$ parameters for the query, key, value, and output projection matrices. The feed-forward subnetwork contributes $(256 \times 512 + 512) + (512 \times 256 + 256) = 262{,}912$ parameters, and the two layer-normalization modules add $2 \times (256 + 256) = 1{,}024$ parameters. With two encoder layers, the encoder contributes $1{,}054{,}208$ learnable parameters in total. In addition, the final layer-normalization module contains $512$ parameters, and the classifier head consists of a $256 \times 256 + 256 = 65{,}792$ parameter linear layer followed by a $256 \times 3 + 3 = 771$ parameter output layer. Summing all components results in a total of $8{,}817{,}667$ learnable parameters.
 
-Changing the learning rate had the most substantial effect on validation performance. We performed a sweep over learning rates of $\{5 \times 10^{-5},\, 1 \times 10^{-4},\, 3 \times 10^{-4},\, 1 \times 10^{-3}\}$ and recorded the highest validation F1 score for each configuration. As shown in Figure \ref{fig:transformer_val_curve}, increasing the learning rate initially leads to a nearly linear improvement in F1 performance, with the model achieving its peak when $\text{lr} = 3 \times 10^{-4}$. However, once the learning rate exceeds this value, the validation F1 score begins to decrease. This behavior is expected because as we increase the learning rate, the optimizer takes excessively large steps which causes training to be unstable. This could result in sharp increases in validation loss and a drop in validation f1. Thus, the learning rate sweep reveals that moderately small learning rates help the model converge smoothly.
-
-% \begin{figure}[h] % [t] 
-% \vspace{-2mm}
-%     \includegraphics[width=\linewidth]{custom_transformer_validation_curve.png}
-%     \caption{Custom Transformer Validation curve}
-%     \label{fig:transformer_val_curve}
-% \vspace{-4mm}
-% \end{figure}
-
-% \subsubsection{Architecture}
-
-% \subsubsection{Fine-tuning}
+Changing the learning rate had the strongest impact on validation performance. Figure \ref{fig:transformer_val_curve} illustrates how validation performance varies as the learning rate changes while other hyperparameters remain fixed. Validation F1 increases steadily up to $3\times 10^{-4}$, where the model achieves its peak score, and declines beyond this point as larger step sizes are introduced. This trend aligns with optimization theory, where excessively high learning rates tend to overshoot local minima, destabilize updates and ultimately reduce generalization performance.
 
 \subsection{DeBERTa}
-% batchsize16_lr5e6
-% Best configuration: learning rate = , batch size = 16, weight decay = 0.01, epoch=7
-% train\_batch\_size=16
-% eval_batch_size=16
 
-Unlike our lightweight encoder-only custom transformer model, DeBERTA-v3 is a much larger Transformer pre-trained on a massive text corpora with a vocabulary size of $128{,}000$ tokens and 98M parameters in the embedding layer; it consists of 12 layers, a hidden size of 768 and 86M backbone parameters resulting in a total of ~184M parameters \cite{DeBERTa}. Because we do not make any changes to the internal workings of the DeBERTa model, we only add parameters to the classification head to match our 3-label classification task: we add an additional $768 \times 768 + 768$ parameters for the first linear layer, and $768 \times 3 + 3$ for the second layer. Due to the sheer number of parameters in the model, we can see that the total number of learnable parameters is dictated by the pretrained DeBERTa-v3 encoder.
+Unlike our lightweight encoder-only Transformer, DeBERTa-v3-base is a substantially larger pre-trained model. It is built on 128,000-token vocabulary with approximately
+98,000,000 parameters in the embedding layer. It contains 12 Transformer encoder layers with a hidden size of 768 with the backbone alone accounting for about 86,000,000 parameters. This results in roughly 184,000,000 learnable parameters in total \cite{DeBERTaV3}. Since we do not modify the internal architecture, we simply reuse the predefined DeBERTa classification head and adapt only its output layer to our three-way label space. Thus, fine-tuning primarily updates the existing pretrained representations and a relatively small number of task-specific parameters on top.
 
-In regards to hyperparameter tuning, we keep the model architecture fixed to the pretrained variant and tune only optimization and batch-level hyperparameters. The best-performing configuration used a learning rate of $5 \times 10^{-6}$, batch size of 16, weight decay of 0.01 and 7 epochs. Our choice of a smaller batch size and epoch count comes from the fact that our dataset has less than 100K tweets. Since the dataset is small in comaprison to the capacity of the model, we saw signs of overfitting once the model trained for more than 7 epochs and the smaller batch size allowed us to make more frequent updates per epoch. As illustrated in Figure \ref{fig:pretrained_transformer_val_curve}, we see an initial increase in the validation f1 score as we increase the learning rate from $1 \times 10^{-6}$ to  $5 \times 10^{-6}$ but falls when we increase the rate further, indicating that a rate of $5 \times 10^{-6}$ provides the best balance between adapting the pre-trained weights and not making excessive parameter updates. Because DeBERTa-v3 has more than 100M parameters, a slight increase in the learning rate could make drastic changes in the model's internal representations and destabilize the learning process. 
-
-% \begin{figure}[h] % [t] 
-% \vspace{-2mm}
-%     \includegraphics[width=\linewidth]{pretrained_transformer_f1_score_val_curve.png}
-%     \caption{DeBERTa Validation curve}
-%     \label{fig:pretrained_val_curve}
-% \vspace{-4mm}
-% \end{figure}
+Hyperparameter tuning was performed while keeping the pretrained architecture fixed, modifying only learning rate, weight decay, and batch size. The best validation performance was achieved at $5\times10^{-6}$ with weight decay 0.01 and batch size 16. Changing the learning rate had the strongest impact on validation performance. Figure \ref{fig:pretrained_transformer_val_curve} shows the validation performances for learning rates of $1\times 10^{-6}$, $5\times 10^{-6}$, $1\times 10^{-5}$, and $2\times 10^{-5}$ while keeping other configuration fixed. We see that optimal learning rate value is $5 \times 10^{-6}$, which is a lot smaller compared to the learning rates chosen for other models (CNN: $1 \times 10^{-3}$, Custom Transformer: $3 \times 10^{-4}$). 
+This indicates that a slight increase in the learning rate could make drastic changes in the model's internal representations and destabilize the learning process due to extensive amount of parameters in the pretrained model.
 
 \subsection{Learning Curves}
 
@@ -284,13 +244,15 @@ Figure \ref{fig:learning_curves} shows the learning curves for each model under 
 This behavior aligns with known properties of CNNs and Transformer encoders. Both models can acquire discriminative features from sentence-level inputs rapidly, with CNNs capturing local n-gram patterns efficiently and Transformers modeling global context in a single attention step. Because the task involves short, self-contained text rather than long-context discourse, extensive training was likely unnecessary, and most useful features appear to have been learned within the first few epochs.
 
 \begin{figure}[h] % [t] 
+\vspace{-3mm}
     \includegraphics[width=\linewidth]{learning_curves.png}
     \caption{Learning curves}
     \label{fig:learning_curves}
-\vspace{-4mm}
+\vspace{-6mm}
 \end{figure}
 
-\section{Experiments and Results}
+\section{Results}
+% \section{Experiments and Results}
 We measure success in two ways. We first measure and compare the validation f1 score of the three models along with the confusion matrices and decide on the best model quantitatively. We then manually inspect the predictions of the best model that differed from the true label to see if the model also did well from a qualitative manner.
 
 % (10 points) How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? Justify your reasons with arguments supported by evidence and data.
@@ -344,44 +306,41 @@ We measure success in two ways. We first measure and compare the validation f1 s
         \hline
     \end{tabular}
     \end{center}
-    \caption{Summary of confusion-matrix counts and overall classification performance metrics for all three models evaluated on the test set. True label counts for each class in the test set: time\_critical = 3,040, support\_and\_relief = 3,040, non\_informative = 11,255.}
+\vspace{-4mm}
+    \caption{Confusion-matrix counts and overall classification performance metrics for all three models evaluated on the test set. True label counts for each class: time\_critical = 3,040, support\_and\_relief = 3,040, non\_informative = 11,255.}
     \label{tab:model_error_performances}
 \vspace{-4mm}
 \end{table*}
 
 \subsection{Quantitative Analysis}
-
-As mentioned earlier, the CrisisBench dataset is imbalanced with a majority of labels in the non\_informative class. Therefore, relying on a single prediction metric may not be suitable and metrics such as accuracy can be inflated. Therefore we take a look at four prediction metrics: accuracy, precision, recall, and macro f1 to ensure that we correctly account for dataset imbalances. As can be seen in Table~\ref{tab:model_error_performances}, our pretrained transformer using DeBERTa-v3 outperforms the other models in terms of all metrics. We can therefore make a confident decision that DeBERTa performs the best in terms of quantitative performance.
-
-We now further expand on the quantitative analysis by looking at the confusion matrices in Table~\ref{tab:model_error_performances} where we see a large difference in the counts for the \textbf{time\_critical} class. Although DeBERTa showed the highest true positive rate for the class, it also showed the highest false positive rate. This combination indicates that the model tends to more aggressively classify tweets as time\_critical class than the other two models. This can arise from two possibilities: the model might be errorring on the side of caution and misclassifying tweets that are borderline time\_critical, or the model may be picking up subtle cues missed by the other models and actually correctly classifying a tweet that was mislabled as not critical. Another interesting point is that while DeBERTa has the lowest false positives for the non\_informative class, meaning that the model predicted informative tweets as non\_informative. Although at first glance this may seem like the model risks filtering out critical tweets, we will further analyze this behavior in Section~\ref{sec:qualitative}.
+To ensure that we correctly account for dataset imbalances mentioned earlier, we take a look at four prediction metrics to make a quantitative analysis on the models' performance: accuracy, precision, recall, and f1 (macro). As can be seen in Table~\ref{tab:model_error_performances}, our pretrained transformer using DeBERTa-v3 outperforms the other models in all metrics. We also analyze the confusion matrices in Table~\ref{tab:model_error_performances} where we see a large difference in the counts for the \textbf{time\_critical} class among the three models. Although DeBERTa showed the highest true positive rate for the class, it also showed the highest false positive rate. This combination indicates that the model tends to more aggressively classify tweets as time\_critical class than the other two models. This can result from two possibilities: the model may be errorring on the side of caution and misclassifying tweets, or the model may be picking up subtle cues missed by the other models and correctly classifying a tweet that was mislabled. Another interesting point is that DeBERTa has the lowest false positives for the non\_informative class, meaning that the model predicted informative tweets as non\_informative. Although at first glance this may seem like the model risks filtering out critical tweets, we reserve judgment until a further section in Section~\ref{sec:qualitative}.
 
 Overall, these results provide strong quantitative evidence that DeBERTa-v3 is the most effective model in terms of our classification task and that the model is better at both identifying informative crisis-related tweets and avoiding incorrect predictions. While some class-specific behaviors warrant additional analysis, the quantitative findings clearly support DeBERTa as the most reliable model.
 
 \subsection{Qualitative Analysis}\label{sec:qualitative}
-As our DeBERTa model shows the best quantitative performance, we now perform qualitative analysis on that model. We define qualitative performance as: how does the true label of a tweet compare with the label predicted by DeBERTa? We pick a few categories of misclassifications to analyze and discuss whether these misses are actual misclassifications. We first look at tweets classified as \textbf{time\_critical} by the CrisisBench dataset but predicted as \textbf{non\_informative} by DeBERTa to analyze the high false negative rates on the non\_informative class we saw in the quantitative analysis. \\
+We now turn to DeBERTa for our qualitative analysis, focusing on how its predicted labels compare with the true labels in the CrisisBench dataset. To better understand the sources of error, we examine several categories of misclassifications. We first look at tweets classified as \textbf{time\_critical} by the CrisisBench dataset but predicted as \textbf{non\_informative} by DeBERTa to analyze the high false negative rates on the non\_informative class we saw in the quantitative analysis. \\
 
 \noindent\textbf{De-escalating essential tweets} After manually inspecting all 358 such tweets, we found that nearly all were \textbf{incorrectly labeled} as time\_critical in the original dataset and did not represent actionable, urgent, or location-specific cries for help. Many were entirely unrelated to crises, such as the tweet, ``how many fertilizer plants are there in texas?...'', which provides no emergency context. Out of the entire set, only a single tweet appeared potentially actionable: ``...Update -- Has Dementia! pls find him \#Missing ...``, though even this example is ambiguous, as it is unclear whether it relates to an ongoing crisis or a missing-person case independent of a disaster. DeBERTa therefore is highly effective at filtering out non-actionable content even when the ground truth labels incorrectly mark such tweets as \textbf{time\_critical}.\\
 
 \noindent\textbf{Escalating non-essential tweets}
-We now turn to the opposite case: tweets whose true label was \textbf{non\_informative} but were predicted as \textbf{time\_critical}. Although many of these tweets reference crises such as hurricanes or wildfires, DeBERTa often struggles to distinguish between actionable and non-actionable content. A common failure mode involves over-sensitivity to words associated with harm or danger. For example, the tweet ``Tattingstone suitcase murder: ... Bernard Oliver death...`` contains the word ``death'' but is entirely unrelated to an ongoing crisis, yet DeBERTa incorrectly flagged it as time\_critical.
+We now turn to the opposite case: tweets whose true label was \textbf{non\_informative} but were predicted as \textbf{time\_critical}. Although many of these tweets reference negative events, we find that DeBERTa often exhibits over-sensitivity to words associated with harm or danger. For example, DeBERTA classified this tweet as time\_critical: ``Tattingstone suitcase murder: ... Bernard Oliver death...``. Although it contains the word ``death'' and ``murder`` it is entirely unrelated to an ongoing crisis. This is one explanation of the high rate of false positives on the time\_critical class.
 
-In summary, our qualitative analysis reinforces the findings of our quantitative analysis: although the model does make mistakes, its errors are largely systematic (such as being consistently sensitive to certain words) and reflects genuine modeling advantages rather than coincidental trends.
-
+In summary, our qualitative analysis reinforces the findings of our quantitative analysis: although the model does make mistakes, its errors are largely systematic (such as being consistently sensitive to certain words) and shows the potential for improvement once these patterns are corrected.
 
 \section{Challenges}
-\textit{(5 points) What problems did you anticipate? What problems did you encounter? Did the very first thing you tried work?}
-% We encountered several sources of difficulty throughout the project starting with the dataset itself. We anticipated that the unstructured nature of social media text would lead to noise, and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training.
-% We also ran into issues in our initial preprocessing pipeline as we saw tweets that were empty after preprocessing which led to unpredictable results during model training. We later updated our preprocessing pipeline to remove empty rows. Lastly, we encountered unexpected results during model training. Initially we anticipated the Transformer model to outperform CNN, but early experiments showed the opposite: CNN achieved stronger performance and training the Transformer for more epochs quickly produced signs of overfit which may have been due to the smaller dataset. Only after switching to a pretrained DeBERTa-v3 model were we able to see signs of performance better than our CNN model. Hyperparameter tuning was similarly challenging at first, and we found that reusing the hyperparameters suggested by the original CrisisBench work provided a stable starting point. What was interesting is that even after fine-tuning, we did not see much performance difference between the runs. This may have been because our transformer model was too complex to make any meaningful differences between the various configurations.
+% \textit{(5 points) What problems did you anticipate? What problems did you encounter? Did the very first thing you tried work?}
+We encountered several sources of difficulty throughout the project starting with the dataset itself. We anticipated that the unstructured nature of social media text would lead to noise and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training.
+We also ran into issues in our initial preprocessing pipeline as we saw tweets that were empty after preprocessing which led to unpredictable results during model training. We later updated our preprocessing pipeline to remove empty rows. Lastly, we encountered unexpected results during model training. Initially we anticipated the Transformer model to outperform CNN, but early experiments showed the opposite: CNN achieved stronger performance and training the Transformer for more epochs quickly produced signs of overfit which may have been due to the smaller dataset. Only after switching to a pretrained DeBERTa-v3 model were we able to see signs of performance better than our CNN model. Hyperparameter tuning was similarly challenging at first, and we found that reusing the hyperparameters suggested by the original CrisisBench work provided a stable starting point. What was interesting is that even after fine-tuning, we did not see much performance difference between the runs. This may have been because our transformer model was too complex to make any meaningful differences between the various configurations.
 
-\textit{We anticipated that the unstructured nature of social media text would lead to noise, and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training. Our very first approach to preprocessing did not work because we failed to account for rows with empty content after cleaning. This led to errors during model training, and we later added logic to remove empty rows after the cleansing process.}
+% \textit{We anticipated that the unstructured nature of social media text would lead to noise, and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training. Our very first approach to preprocessing did not work because we failed to account for rows with empty content after cleaning. This led to errors during model training, and we later added logic to remove empty rows after the cleansing process.}
 
-We thought we would have to train a long time (high epoch), but signs of overfitting were found in early stages. Dataset size wasn't big enough?
+% We thought we would have to train a long time (high epoch), but signs of overfitting were found in early stages. Dataset size wasn't big enough?
 
-At first, we expected Transformer based model to outperform CNN, but it didn't. We had to use pretrained model to outperform CNN.
+% At first, we expected Transformer based model to outperform CNN, but it didn't. We had to use pretrained model to outperform CNN.
 
-Difficulty in tuning at first. reusing the hyperparameters in models from CrisisBench as a starting point helped tuning.
+% Difficulty in tuning at first. reusing the hyperparameters in models from CrisisBench as a starting point helped tuning.
 
-After fine-tuning, training didn't provide much difference between the models.
+% After fine-tuning, training didn't provide much difference between the models.
 
 
 
@@ -427,7 +386,54 @@ Jade Kim & CNN Implementation, Training and Analysis & Implemented CNN model. Fi
 The Github repository for our final project is at:
 All code for our experiments can be found in our Github repository \url{https://github.com/bugoverdose/dl-twitter-crisis}.
 
-\clearpage
+
+\section{Hyperparameter Tuning}
+
+% \begin{table}[h] % [t]
+% \centering
+%     \begin{tabular}{|l|l|l|l|l|l|l|l|}
+%     \hline
+%         filters & filter\_sizes & dropout & batch\_size & lr & train\_f1 & val\_f1 & test\_f1 \\ \hline
+%         50 & 3,4,5 & 0.5000 & 32 & 5e-4 & 0.8084 & 0.7950 & 0.7905 \\ \hline
+%         50 & 3,4,5 & 0.5000 & 32 & 5e-4 & 0.8701 & 0.8246 & 0.8232 \\ \hline
+%         50 & 3,4,5 & 0.7000 & 32 & 5e-4 & 0.8507 & 0.8237 & 0.8217 \\ \hline
+%         50 & 4,5,6 & 0.7000 & 32 & 5e-4 & 0.8589 & 0.8214 & 0.8193 \\ \hline
+%         100 & 3,4,5 & 0.7000 & 32 & 5e-4 & 0.8666 & 0.8216 & 0.8243 \\ \hline
+%         100 & 4,5,6 & 0.7000 & 32 & 5e-4 & 0.8711 & 0.8285 & 0.8253 \\ \hline
+%         50 & 3,4,5 & 0.7000 & 32 & 1e-3 & 0.8714 & 0.8258 & 0.8216 \\ \hline
+%         50 & 4,5,6 & 0.7000 & 32 & 1e-3 & 0.8735 & 0.8246 & 0.8197 \\ \hline
+%         100 & 3,4,5 & 0.5000 & 32 & 1e-3 & 0.8597 & 0.8253 & 0.8234 \\ \hline
+%     \end{tabular}
+%     \caption{CNN Snippet of hyperparameter tuning values}
+% \end{table}
+
+\begin{table}[h] % [t]
+\centering
+    \begin{tabular}{|l|l|l|l|}
+    \hline
+        learning rate & epoch & train\_f1 & val\_f1 \\ \hline
+        5e-5 & 8 & 0.8562 & 0.7894 \\ \hline
+        1e-4 & 3 & 0.7992 & 0.7676 \\ \hline
+        3e-4 & 0 & 0 & 0 \\ \hline
+        1e-3 & 0 & 0 & 0 \\ \hline
+    \end{tabular}
+    \caption{Custom Transformer}
+\end{table}
+
+\begin{table}[h] % [t]
+\centering
+    \begin{tabular}{|l|l|l|l|}
+    \hline
+        learning rate & epoch & train\_f1 & val\_f1 \\ \hline
+        1e-6 & 16 & 0.9570 & 0.8583 \\ \hline
+        5e-6 & 7 & 0.9436 & 0.8603 \\ \hline
+        1e-5 & 5 & 0.9675 & 0.8584 \\ \hline
+        2e-5 & 3 & 0.9535 & 0.8579 \\ \hline
+    \end{tabular}
+    \caption{DeBERTa}
+\end{table}
+
+\end{document}
 
 % \section{CNN Hyperparameter Tuning Data}
 % \begin{table*}[t]
@@ -448,310 +454,309 @@ All code for our experiments can be found in our Github repository \url{https://
 %     \caption{Snippet of hyperparameter tuning values}
 % \end{table}
 
-\section{Other Sections - Rubric}
-
-You are welcome to introduce additional sections or subsections, if required, to address the following questions in detail. 
-
-(5 points) Appropriate use of figures / tables / visualizations. Are the ideas presented with appropriate illustration? Are the results presented clearly; are the important differences illustrated? 
-
-(5 points) Overall clarity. Is the manuscript self-contained? Can a peer who has also taken Deep Learning understand all of the points addressed above? Is sufficient detail provided? 
-
-(5 points) Finally, points will be distributed based on your understanding of how your project relates to Deep Learning. Here are some questions to think about: 
-
-What was the structure of your problem? How did the structure of your model reflect the structure of your problem? 
-
-What parts of your model had learned parameters (e.g., convolution layers) and what parts did not (e.g., post-processing classifier probabilities into decisions)? 
-
-What representations of input and output did the neural network expect? How was the data pre/post-processed?
-What was the loss function? 
-
-Did the model overfit? How well did the approach generalize? 
-
-What hyperparameters did the model have? How were they chosen? How did they affect performance? What optimizer was used? 
-
-What Deep Learning framework did you use? 
-
-What existing code or models did you start with and what did those starting points provide? 
-
-Briefly discuss potential future work that the research community could focus on to make improvements in the direction of your project's topic.
-
-
-\subsection{Language}
-
-All manuscripts must be in English.
-
-
-\subsection{Paper length}
-Papers, excluding the references section,
-must be no longer than six pages in length. The references section
-will not be included in the page count, and there is no limit on the
-length of the references section. For example, a paper of six pages
-with two pages of references would have a total length of 8 pages.
-
-%-------------------------------------------------------------------------
-\subsection{The ruler}
-The \LaTeX\ style defines a printed ruler which should be present in the
-version submitted for review.  The ruler is provided in order that
-reviewers may comment on particular lines in the paper without
-circumlocution.  If you are preparing a document using a non-\LaTeX\
-document preparation system, please arrange for an equivalent ruler to
-appear on the final output pages.  The presence or absence of the ruler
-should not change the appearance of any other content on the page.  The
-camera ready copy should not contain a ruler. (\LaTeX\ users may uncomment
-the \verb'\cvprfinalcopy' command in the document preamble.)  Reviewers:
-note that the ruler measurements do not align well with lines in the paper
---- this turns out to be very difficult to do well when the paper contains
-many figures and equations, and, when done, looks ugly.  Just use fractional
-references (e.g.\ this line is $095.5$), although in most cases one would
-expect that the approximate location will be adequate.
-
-\subsection{Mathematics}
-
-Please number all of your sections and displayed equations.  It is
-important for readers to be able to refer to any particular equation.  Just
-because you didn't refer to it in the text doesn't mean some future reader
-might not need to refer to it.  It is cumbersome to have to use
-circumlocutions like ``the equation second from the top of page 3 column
-1''.  (Note that the ruler will not be present in the final copy, so is not
-an alternative to equation numbers).  All authors will benefit from reading
-Mermin's description of how to write mathematics:
-\url{http://www.pamitc.org/documents/mermin.pdf}.
-
-Finally, you may feel you need to tell the reader that more details can be
-found elsewhere, and refer them to a technical report.  For conference
-submissions, the paper must stand on its own, and not {\em require} the
-reviewer to go to a techreport for further details.  Thus, you may say in
-the body of the paper ``further details may be found
-in~\cite{Authors14b}''.  Then submit the techreport as additional material.
-Again, you may not assume the reviewers will read this material.
-
-Sometimes your paper is about a problem which you tested using a tool which
-is widely known to be restricted to a single institution.  For example,
-let's say it's 1969, you have solved a key problem on the Apollo lander,
-and you believe that the CVPR70 audience would like to hear about your
-solution.  The work is a development of your celebrated 1968 paper entitled
-``Zero-g frobnication: How being the only people in the world with access to
-the Apollo lander source code makes us a wow at parties'', by Zeus \etal.
-
-You can handle this paper like any other.  Don't write ``We show how to
-improve our previous work [Anonymous, 1968].  This time we tested the
-algorithm on a lunar lander [name of lander removed for blind review]''.
-That would be silly, and would immediately identify the authors. Instead
-write the following:
-\begin{quotation}
-\noindent
-   We describe a system for zero-g frobnication.  This
-   system is new because it handles the following cases:
-   A, B.  Previous systems [Zeus et al. 1968] didn't
-   handle case B properly.  Ours handles it by including
-   a foo term in the bar integral.
-
-   ...
-
-   The proposed system was integrated with the Apollo
-   lunar lander, and went all the way to the moon, don't
-   you know.  It displayed the following behaviours
-   which show how well we solved cases A and B: ...
-\end{quotation}
-As you can see, the above text follows standard scientific convention,
-reads better than the first version, and does not explicitly name you as
-the authors.  A reviewer might think it likely that the new paper was
-written by Zeus \etal, but cannot make any decision based on that guess.
-He or she would have to be sure that no other authors could have been
-contracted to solve problem B.
-\medskip
-
-\noindent
-FAQ\medskip\\
-{\bf Q:} Are acknowledgements OK?\\
-{\bf A:} No.  Leave them for the final copy.\medskip\\
-{\bf Q:} How do I cite my results reported in open challenges?
-{\bf A:} To conform with the double blind review policy, you can report results of other challenge participants together with your results in your paper. For your results, however, you should not identify yourself and should not mention your participation in the challenge. Instead present your results referring to the method proposed in your paper and draw conclusions based on the experimental comparison to other results.\medskip\\
-
-\begin{figure}[t]
-\begin{center}
-\fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
-   %\includegraphics[width=0.8\linewidth]{egfigure.eps}
-\end{center}
-   \caption{Example of caption.  It is set in Roman so that mathematics
-   (always set in Roman: $B \sin A = A \sin B$) may be included without an
-   ugly clash.}
-\label{fig:long}
-\label{fig:onecol}
-\end{figure}
-
-\subsection{Miscellaneous}
-
-\noindent
-Compare the following:\\
-\begin{tabular}{ll}
- \verb'$conf_a$' &  $conf_a$ \\
- \verb'$\mathit{conf}_a$' & $\mathit{conf}_a$
-\end{tabular}\\
-See The \TeX book, p165.
-
-The space after \eg, meaning ``for example'', should not be a
-sentence-ending space. So \eg is correct, {\em e.g.} is not.  The provided
-\verb'\eg' macro takes care of this.
-
-When citing a multi-author paper, you may save space by using ``et alia'',
-shortened to ``\etal'' (not ``{\em et.\ al.}'' as ``{\em et}'' is a complete word.)
-However, use it only when there are three or more authors.  Thus, the
-following is correct: ``
-   Frobnication has been trendy lately.
-   It was introduced by Alpher~\cite{Alpher02}, and subsequently developed by
-   Alpher and Fotheringham-Smythe~\cite{Alpher03}, and Alpher \etal~\cite{Alpher04}.''
-
-This is incorrect: ``... subsequently developed by Alpher \etal~\cite{Alpher03} ...''
-because reference~\cite{Alpher03} has just two authors.  If you use the
-\verb'\etal' macro provided, then you need not worry about double periods
-when used at the end of a sentence as in Alpher \etal.
-
-For this citation style, keep multiple citations in numerical (not
-chronological) order, so prefer \cite{Alpher03,Alpher02,Authors14} to
-\cite{Alpher02,Alpher03,Authors14}.
-
-
-\begin{figure*}
-\begin{center}
-\fbox{\rule{0pt}{2in} \rule{.9\linewidth}{0pt}}
-\end{center}
-   \caption{Example of a short caption, which should be centered.}
-\label{fig:short}
-\end{figure*}
-
-%------------------------------------------------------------------------
-\subsection{Formatting your paper}
-
-All text must be in a two-column format. The total allowable width of the
-text area is $6\frac78$ inches (17.5 cm) wide by $8\frac78$ inches (22.54
-cm) high. Columns are to be $3\frac14$ inches (8.25 cm) wide, with a
-$\frac{5}{16}$ inch (0.8 cm) space between them. The main title (on the
-first page) should begin 1.0 inch (2.54 cm) from the top edge of the
-page. The second and following pages should begin 1.0 inch (2.54 cm) from
-the top edge. On all pages, the bottom margin should be 1-1/8 inches (2.86
-cm) from the bottom edge of the page for $8.5 \times 11$-inch paper; for A4
-paper, approximately 1-5/8 inches (4.13 cm) from the bottom edge of the
-page.
-
-%-------------------------------------------------------------------------
-\subsection{Margins and page numbering}
-
-All printed material, including text, illustrations, and charts, must be kept
-within a print area 6-7/8 inches (17.5 cm) wide by 8-7/8 inches (22.54 cm)
-high.
-
-
-
-%-------------------------------------------------------------------------
-\subsection{Type-style and fonts}
-
-Wherever Times is specified, Times Roman may also be used. If neither is
-available on your word processor, please use the font closest in
-appearance to Times to which you have access.
-
-MAIN TITLE. Center the title 1-3/8 inches (3.49 cm) from the top edge of
-the first page. The title should be in Times 14-point, boldface type.
-Capitalize the first letter of nouns, pronouns, verbs, adjectives, and
-adverbs; do not capitalize articles, coordinate conjunctions, or
-prepositions (unless the title begins with such a word). Leave two blank
-lines after the title.
-
-AUTHOR NAME(s) and AFFILIATION(s) are to be centered beneath the title
-and printed in Times 12-point, non-boldface type. This information is to
-be followed by two blank lines.
-
-The ABSTRACT and MAIN TEXT are to be in a two-column format.
-
-MAIN TEXT. Type main text in 10-point Times, single-spaced. Do NOT use
-double-spacing. All paragraphs should be indented 1 pica (approx. 1/6
-inch or 0.422 cm). Make sure your text is fully justified---that is,
-flush left and flush right. Please do not place any additional blank
-lines between paragraphs.
-
-Figure and table captions should be 9-point Roman type as in
-Figures~\ref{fig:onecol} and~\ref{fig:short}.  Short captions should be centred.
-
-\noindent Callouts should be 9-point Helvetica, non-boldface type.
-Initially capitalize only the first word of section titles and first-,
-second-, and third-order headings.
-
-FIRST-ORDER HEADINGS. (For example, {\large \bf 1. Introduction})
-should be Times 12-point boldface, initially capitalized, flush left,
-with one blank line before, and one blank line after.
-
-SECOND-ORDER HEADINGS. (For example, { \bf 1.1. Database elements})
-should be Times 11-point boldface, initially capitalized, flush left,
-with one blank line before, and one after. If you require a third-order
-heading (we discourage it), use 10-point Times, boldface, initially
-capitalized, flush left, preceded by one blank line, followed by a period
-and your text on the same line.
-
-%-------------------------------------------------------------------------
-\subsection{Footnotes}
-
-Please use footnotes\footnote {This is what a footnote looks like.  It
-often distracts the reader from the main flow of the argument.} sparingly.
-Indeed, try to avoid footnotes altogether and include necessary peripheral
-observations in
-the text (within parentheses, if you prefer, as in this sentence).  If you
-wish to use a footnote, place it at the bottom of the column on the page on
-which it is referenced. Use Times 8-point type, single-spaced.
-
-
-%-------------------------------------------------------------------------
-\subsection{References}
-
-List and number all bibliographical references in 9-point Times,
-single-spaced, at the end of your paper. When referenced in the text,
-enclose the citation number in square brackets, for
-example~\cite{Authors14}.  Where appropriate, include the name(s) of
-editors of referenced books.
-
-\begin{table}
-\begin{center}
-\begin{tabular}{|l|c|}
-\hline
-Method & Frobnability \\
-\hline\hline
-Theirs & Frumpy \\
-Yours & Frobbly \\
-Ours & Makes one's heart Frob\\
-\hline
-\end{tabular}
-\end{center}
-\caption{Results.   Ours is better.}
-\end{table}
-
-%-------------------------------------------------------------------------
-\subsection{Illustrations, graphs, and photographs}
-
-All graphics should be centered.  Please ensure that any point you wish to
-make is resolvable in a printed copy of the paper.  Resize fonts in figures
-to match the font in the body text, and choose line widths which render
-effectively in print.  Many readers (and reviewers), even of an electronic
-copy, will choose to print your paper in order to read it.  You cannot
-insist that they do otherwise, and therefore must not assume that they can
-zoom in to see tiny details on a graphic.
-
-When placing figures in \LaTeX, it's almost always best to use
-\verb+\includegraphics+, and to specify the  figure width as a multiple of
-the line width as in the example below
-{\small\begin{verbatim}
-   \usepackage[dvips]{graphicx} ...
-   \includegraphics[width=0.8\linewidth]
-                   {myfile.eps}
-\end{verbatim}
-}
-
-
-%-------------------------------------------------------------------------
-\subsection{Color}
-
-Please refer to the author guidelines on the CVPR 2020 web page for a discussion
-of the use of color in your document.
-
-\end{document}
+% \section{Other Sections - Rubric}
+
+% You are welcome to introduce additional sections or subsections, if required, to address the following questions in detail. 
+
+% (5 points) Appropriate use of figures / tables / visualizations. Are the ideas presented with appropriate illustration? Are the results presented clearly; are the important differences illustrated? 
+
+% (5 points) Overall clarity. Is the manuscript self-contained? Can a peer who has also taken Deep Learning understand all of the points addressed above? Is sufficient detail provided? 
+
+% (5 points) Finally, points will be distributed based on your understanding of how your project relates to Deep Learning. Here are some questions to think about: 
+
+% What was the structure of your problem? How did the structure of your model reflect the structure of your problem? 
+
+% What parts of your model had learned parameters (e.g., convolution layers) and what parts did not (e.g., post-processing classifier probabilities into decisions)? 
+
+% What representations of input and output did the neural network expect? How was the data pre/post-processed?
+% What was the loss function? 
+
+% Did the model overfit? How well did the approach generalize? 
+
+% What hyperparameters did the model have? How were they chosen? How did they affect performance? What optimizer was used? 
+
+% What Deep Learning framework did you use? 
+
+% What existing code or models did you start with and what did those starting points provide? 
+
+% Briefly discuss potential future work that the research community could focus on to make improvements in the direction of your project's topic.
+
+
+% \subsection{Language}
+
+% All manuscripts must be in English.
+
+
+% \subsection{Paper length}
+% Papers, excluding the references section,
+% must be no longer than six pages in length. The references section
+% will not be included in the page count, and there is no limit on the
+% length of the references section. For example, a paper of six pages
+% with two pages of references would have a total length of 8 pages.
+
+% %-------------------------------------------------------------------------
+% \subsection{The ruler}
+% The \LaTeX\ style defines a printed ruler which should be present in the
+% version submitted for review.  The ruler is provided in order that
+% reviewers may comment on particular lines in the paper without
+% circumlocution.  If you are preparing a document using a non-\LaTeX\
+% document preparation system, please arrange for an equivalent ruler to
+% appear on the final output pages.  The presence or absence of the ruler
+% should not change the appearance of any other content on the page.  The
+% camera ready copy should not contain a ruler. (\LaTeX\ users may uncomment
+% the \verb'\cvprfinalcopy' command in the document preamble.)  Reviewers:
+% note that the ruler measurements do not align well with lines in the paper
+% --- this turns out to be very difficult to do well when the paper contains
+% many figures and equations, and, when done, looks ugly.  Just use fractional
+% references (e.g.\ this line is $095.5$), although in most cases one would
+% expect that the approximate location will be adequate.
+
+% \subsection{Mathematics}
+
+% Please number all of your sections and displayed equations.  It is
+% important for readers to be able to refer to any particular equation.  Just
+% because you didn't refer to it in the text doesn't mean some future reader
+% might not need to refer to it.  It is cumbersome to have to use
+% circumlocutions like ``the equation second from the top of page 3 column
+% 1''.  (Note that the ruler will not be present in the final copy, so is not
+% an alternative to equation numbers).  All authors will benefit from reading
+% Mermin's description of how to write mathematics:
+% \url{http://www.pamitc.org/documents/mermin.pdf}.
+
+% Finally, you may feel you need to tell the reader that more details can be
+% found elsewhere, and refer them to a technical report.  For conference
+% submissions, the paper must stand on its own, and not {\em require} the
+% reviewer to go to a techreport for further details.  Thus, you may say in
+% the body of the paper ``further details may be found
+% in~\cite{Authors14b}''.  Then submit the techreport as additional material.
+% Again, you may not assume the reviewers will read this material.
+
+% Sometimes your paper is about a problem which you tested using a tool which
+% is widely known to be restricted to a single institution.  For example,
+% let's say it's 1969, you have solved a key problem on the Apollo lander,
+% and you believe that the CVPR70 audience would like to hear about your
+% solution.  The work is a development of your celebrated 1968 paper entitled
+% ``Zero-g frobnication: How being the only people in the world with access to
+% the Apollo lander source code makes us a wow at parties'', by Zeus \etal.
+
+% You can handle this paper like any other.  Don't write ``We show how to
+% improve our previous work [Anonymous, 1968].  This time we tested the
+% algorithm on a lunar lander [name of lander removed for blind review]''.
+% That would be silly, and would immediately identify the authors. Instead
+% write the following:
+% \begin{quotation}
+% \noindent
+%    We describe a system for zero-g frobnication.  This
+%    system is new because it handles the following cases:
+%    A, B.  Previous systems [Zeus et al. 1968] didn't
+%    handle case B properly.  Ours handles it by including
+%    a foo term in the bar integral.
+
+%    ...
+
+%    The proposed system was integrated with the Apollo
+%    lunar lander, and went all the way to the moon, don't
+%    you know.  It displayed the following behaviours
+%    which show how well we solved cases A and B: ...
+% \end{quotation}
+% As you can see, the above text follows standard scientific convention,
+% reads better than the first version, and does not explicitly name you as
+% the authors.  A reviewer might think it likely that the new paper was
+% written by Zeus \etal, but cannot make any decision based on that guess.
+% He or she would have to be sure that no other authors could have been
+% contracted to solve problem B.
+% \medskip
+
+% \noindent
+% FAQ\medskip\\
+% {\bf Q:} Are acknowledgements OK?\\
+% {\bf A:} No.  Leave them for the final copy.\medskip\\
+% {\bf Q:} How do I cite my results reported in open challenges?
+% {\bf A:} To conform with the double blind review policy, you can report results of other challenge participants together with your results in your paper. For your results, however, you should not identify yourself and should not mention your participation in the challenge. Instead present your results referring to the method proposed in your paper and draw conclusions based on the experimental comparison to other results.\medskip\\
+
+% \begin{figure}[t]
+% \begin{center}
+% \fbox{\rule{0pt}{2in} \rule{0.9\linewidth}{0pt}}
+%    %\includegraphics[width=0.8\linewidth]{egfigure.eps}
+% \end{center}
+%    \caption{Example of caption.  It is set in Roman so that mathematics
+%    (always set in Roman: $B \sin A = A \sin B$) may be included without an
+%    ugly clash.}
+% \label{fig:long}
+% \label{fig:onecol}
+% \end{figure}
+
+% \subsection{Miscellaneous}
+
+% \noindent
+% Compare the following:\\
+% \begin{tabular}{ll}
+%  \verb'$conf_a$' &  $conf_a$ \\
+%  \verb'$\mathit{conf}_a$' & $\mathit{conf}_a$
+% \end{tabular}\\
+% See The \TeX book, p165.
+
+% The space after \eg, meaning ``for example'', should not be a
+% sentence-ending space. So \eg is correct, {\em e.g.} is not.  The provided
+% \verb'\eg' macro takes care of this.
+
+% When citing a multi-author paper, you may save space by using ``et alia'',
+% shortened to ``\etal'' (not ``{\em et.\ al.}'' as ``{\em et}'' is a complete word.)
+% However, use it only when there are three or more authors.  Thus, the
+% following is correct: ``
+%    Frobnication has been trendy lately.
+%    It was introduced by Alpher~\cite{Alpher02}, and subsequently developed by
+%    Alpher and Fotheringham-Smythe~\cite{Alpher03}, and Alpher \etal~\cite{Alpher04}.''
+
+% This is incorrect: ``... subsequently developed by Alpher \etal~\cite{Alpher03} ...''
+% because reference~\cite{Alpher03} has just two authors.  If you use the
+% \verb'\etal' macro provided, then you need not worry about double periods
+% when used at the end of a sentence as in Alpher \etal.
+
+% For this citation style, keep multiple citations in numerical (not
+% chronological) order, so prefer \cite{Alpher03,Alpher02,Authors14} to
+% \cite{Alpher02,Alpher03,Authors14}.
+
+
+% \begin{figure*}
+% \begin{center}
+% \fbox{\rule{0pt}{2in} \rule{.9\linewidth}{0pt}}
+% \end{center}
+%    \caption{Example of a short caption, which should be centered.}
+% \label{fig:short}
+% \end{figure*}
+
+% %------------------------------------------------------------------------
+% \subsection{Formatting your paper}
+
+% All text must be in a two-column format. The total allowable width of the
+% text area is $6\frac78$ inches (17.5 cm) wide by $8\frac78$ inches (22.54
+% cm) high. Columns are to be $3\frac14$ inches (8.25 cm) wide, with a
+% $\frac{5}{16}$ inch (0.8 cm) space between them. The main title (on the
+% first page) should begin 1.0 inch (2.54 cm) from the top edge of the
+% page. The second and following pages should begin 1.0 inch (2.54 cm) from
+% the top edge. On all pages, the bottom margin should be 1-1/8 inches (2.86
+% cm) from the bottom edge of the page for $8.5 \times 11$-inch paper; for A4
+% paper, approximately 1-5/8 inches (4.13 cm) from the bottom edge of the
+% page.
+
+% %-------------------------------------------------------------------------
+% \subsection{Margins and page numbering}
+
+% All printed material, including text, illustrations, and charts, must be kept
+% within a print area 6-7/8 inches (17.5 cm) wide by 8-7/8 inches (22.54 cm)
+% high.
+
+
+
+% %-------------------------------------------------------------------------
+% \subsection{Type-style and fonts}
+
+% Wherever Times is specified, Times Roman may also be used. If neither is
+% available on your word processor, please use the font closest in
+% appearance to Times to which you have access.
+
+% MAIN TITLE. Center the title 1-3/8 inches (3.49 cm) from the top edge of
+% the first page. The title should be in Times 14-point, boldface type.
+% Capitalize the first letter of nouns, pronouns, verbs, adjectives, and
+% adverbs; do not capitalize articles, coordinate conjunctions, or
+% prepositions (unless the title begins with such a word). Leave two blank
+% lines after the title.
+
+% AUTHOR NAME(s) and AFFILIATION(s) are to be centered beneath the title
+% and printed in Times 12-point, non-boldface type. This information is to
+% be followed by two blank lines.
+
+% The ABSTRACT and MAIN TEXT are to be in a two-column format.
+
+% MAIN TEXT. Type main text in 10-point Times, single-spaced. Do NOT use
+% double-spacing. All paragraphs should be indented 1 pica (approx. 1/6
+% inch or 0.422 cm). Make sure your text is fully justified---that is,
+% flush left and flush right. Please do not place any additional blank
+% lines between paragraphs.
+
+% Figure and table captions should be 9-point Roman type as in
+% Figures~\ref{fig:onecol} and~\ref{fig:short}.  Short captions should be centred.
+
+% \noindent Callouts should be 9-point Helvetica, non-boldface type.
+% Initially capitalize only the first word of section titles and first-,
+% second-, and third-order headings.
+
+% FIRST-ORDER HEADINGS. (For example, {\large \bf 1. Introduction})
+% should be Times 12-point boldface, initially capitalized, flush left,
+% with one blank line before, and one blank line after.
+
+% SECOND-ORDER HEADINGS. (For example, { \bf 1.1. Database elements})
+% should be Times 11-point boldface, initially capitalized, flush left,
+% with one blank line before, and one after. If you require a third-order
+% heading (we discourage it), use 10-point Times, boldface, initially
+% capitalized, flush left, preceded by one blank line, followed by a period
+% and your text on the same line.
+
+% %-------------------------------------------------------------------------
+% \subsection{Footnotes}
+
+% Please use footnotes\footnote {This is what a footnote looks like.  It
+% often distracts the reader from the main flow of the argument.} sparingly.
+% Indeed, try to avoid footnotes altogether and include necessary peripheral
+% observations in
+% the text (within parentheses, if you prefer, as in this sentence).  If you
+% wish to use a footnote, place it at the bottom of the column on the page on
+% which it is referenced. Use Times 8-point type, single-spaced.
+
+
+% %-------------------------------------------------------------------------
+% \subsection{References}
+
+% List and number all bibliographical references in 9-point Times,
+% single-spaced, at the end of your paper. When referenced in the text,
+% enclose the citation number in square brackets, for
+% example~\cite{Authors14}.  Where appropriate, include the name(s) of
+% editors of referenced books.
+
+% \begin{table}
+% \begin{center}
+% \begin{tabular}{|l|c|}
+% \hline
+% Method & Frobnability \\
+% \hline\hline
+% Theirs & Frumpy \\
+% Yours & Frobbly \\
+% Ours & Makes one's heart Frob\\
+% \hline
+% \end{tabular}
+% \end{center}
+% \caption{Results.   Ours is better.}
+% \end{table}
+
+% %-------------------------------------------------------------------------
+% \subsection{Illustrations, graphs, and photographs}
+
+% All graphics should be centered.  Please ensure that any point you wish to
+% make is resolvable in a printed copy of the paper.  Resize fonts in figures
+% to match the font in the body text, and choose line widths which render
+% effectively in print.  Many readers (and reviewers), even of an electronic
+% copy, will choose to print your paper in order to read it.  You cannot
+% insist that they do otherwise, and therefore must not assume that they can
+% zoom in to see tiny details on a graphic.
+
+% When placing figures in \LaTeX, it's almost always best to use
+% \verb+\includegraphics+, and to specify the  figure width as a multiple of
+% the line width as in the example below
+% {\small\begin{verbatim}
+%    \usepackage[dvips]{graphicx} ...
+%    \includegraphics[width=0.8\linewidth]
+%                    {myfile.eps}
+% \end{verbatim}
+% }
+
+
+% %-------------------------------------------------------------------------
+% \subsection{Color}
+
+% Please refer to the author guidelines on the CVPR 2020 web page for a discussion
+% of the use of color in your document.
+
 
 %------------------------------------------------------------------------
 
