@@ -48,7 +48,7 @@ Jade Kim\\
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-    The ability to classify and prioritize tweets during crises is essential for emergency responders as they need to be able to sort through and prioritize information. Many studies have explored twitter-based classification but chose categories that were either too broad (informative vs. non-informative) or too granular which made prioritization harder. In this project we re-define the classification problem as a three-class task (time\_critical, support\_and\_relief, non\_informative) and explore the performance of three different deep learning models, a transformer model and a CNN model built from scratch, and a pretrained Transformer using DeBERTa-v3. We report our experiences and challenges building and training the models and perform quantitative and qualitative analyses to explain why the pretrained Transformer is most suitable for our multi-label classification task.
+    The ability to classify and prioritize tweets during crises is essential for emergency responders who must quickly sort through large volumes of information. Many studies have explored Twitter-based classification, but existing category schemes are often either too broad (informative vs.\ non-informative) or too granular, making practical prioritization difficult. In this project, we redefine the task as a three-class problem (time\_critical, support\_and\_relief, non\_informative) and examine the performance of three deep learning models: a CNN built from scratch, a custom Transformer, and a fine-tuned pretrained Transformer. In this report, we describe how each model was implemented and trained, identify the best-performing model through quantitative evaluation, provide qualitative analysis for deeper insight, and discuss limitations and directions for future work.
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
@@ -133,18 +133,9 @@ For the experiments, we use CNN and transformer-based models, as they have repea
 
 \subsection{CNN}
 
-We implemented the CNN model from scratch using PyTorch. The implemented model begins with an embedding layer initialized with pretrained GloVe word vectors, which are fed into parallel 1D convolutional layers with kernel sizes of 3, 4, and 5 to capture linguistic features across different n-gram spans (see Figure \ref{fig:cnn_flowchart}). Each convolutional branch is activated with ReLU and followed by max-over-time pooling, after which the resulting feature representations are concatenated and regularized through dropout. A final fully connected layer maps the combined feature vector to the three output categories producing the logits used for classification.
+We implemented the CNN model from scratch using PyTorch. The implemented model begins with an embedding layer initialized with pretrained GloVe word vectors, which are fed into parallel 1D convolutional layers with kernel sizes of 3, 4, and 5 to capture linguistic features across different n-gram spans (see Figure \ref{fig:cnn_flowchart} in appendix). Each convolutional branch is activated with ReLU and followed by max-over-time pooling, after which the resulting feature representations are concatenated and regularized through dropout. A final fully connected layer maps the combined feature vector to the three output categories producing the logits used for classification.
 
 The original CrisisBench paper \cite{CrisisBenchPaper} and its public GitHub repository\footnote{\url{https://github.com/firojalam/crisis_datasets_benchmarks}} served as references for our CNN implementation. We did not reuse their source code, since it was written using Keras while our pipeline was developed in PyTorch, and we aimed to introduce several architectural modifications. In particular, unlike the original work that used word2vec embeddings, we used pretrained GloVe vectors which tend to produce more semantically structured word representations by capturing global co-occurrence statistics \cite{Glove}. We expected this to help the model learn relationships between rare or domain-specific terms often found in crisis-related tweets, providing a stronger initialization for downstream classification.
-
-\begin{figure}[h]
-\vspace{-1mm}
-    \centering
-    \includegraphics[width=1.0  \linewidth]{cnn_flowchart.png}
-    \caption{CNN Architecture}
-    \label{fig:cnn_flowchart}
-\vspace{-3mm}
-\end{figure}
 
 Overall, this architecture is likely to be successful because it follows the widely adopted TextCNN architecture \cite{TextCNN}, which has proven effective for short, informal, and often noisy text such as tweets. By applying multiple convolutional filters with different receptive field sizes, the model can detect key local patterns and capture short but meaningful phrases (e.g., mentions of injuries or resource needs) that signal urgent or relevant information, even when the surrounding text is inconsistent or unstructured.
 
@@ -180,6 +171,7 @@ Total & 87,345 & 100\% \\
 \hline
 \end{tabular}
 \end{center}
+\vspace{-4mm}
 \caption{Class distribution for CrisisBench dataset}
 \label{tab:class_distribution}
 \vspace{-4mm}
@@ -209,7 +201,7 @@ Total & 87,345 & 100\% \\
     \caption{DeBERTa}
     \label{fig:pretrained_transformer_val_curve}
 \end{subfigure}
-\caption{Validation curves for all three models (see Table \ref{tab:val_curve_performance_models} in appendix for details)}
+\caption{Validation curves for all three models (see Table \ref{tab:val_curve_performance_models} in appendix for details of each configuration)}
 \label{fig:all_validation_curves}
 \end{figure*}
 
@@ -229,80 +221,47 @@ With this configuration, the token embedding layer contains $30{,}000 \times 256
 
 Changing the learning rate had the strongest impact on validation performance. Figure \ref{fig:transformer_val_curve} illustrates how validation performance varies as the learning rate changes while other hyperparameters remain fixed. Validation F1 increases steadily up to $3\times 10^{-4}$, where the model achieves its peak score, and declines beyond this point as larger step sizes are introduced. This trend aligns with optimization theory, where excessively high learning rates tend to overshoot local minima, destabilize updates and ultimately reduce generalization performance.
 
-\subsection{DeBERTa}
-
-Unlike our lightweight encoder-only Transformer, DeBERTa-v3-base is a substantially larger pre-trained model. It is built on 128,000-token vocabulary with approximately
-98,000,000 parameters in the embedding layer. It contains 12 Transformer encoder layers with a hidden size of 768 with the backbone alone accounting for about 86,000,000 parameters. This results in roughly 184,000,000 learnable parameters in total \cite{DeBERTaV3}. Since we do not modify the internal architecture, we simply reuse the predefined DeBERTa classification head and adapt only its output layer to our three-way label space. Thus, fine-tuning primarily updates the existing pretrained representations and a relatively small number of task-specific parameters on top.
-
-Hyperparameter tuning was performed while keeping the pretrained architecture fixed, modifying only learning rate, weight decay, and batch size. The best validation performance was achieved at $5\times10^{-6}$ with weight decay 0.01 and batch size 16. Changing the learning rate had the strongest impact on validation performance. Figure \ref{fig:pretrained_transformer_val_curve} shows the validation performances for learning rates of $1\times 10^{-6}$, $5\times 10^{-6}$, $1\times 10^{-5}$, and $2\times 10^{-5}$ while keeping other configuration fixed. We see that optimal learning rate value is $5 \times 10^{-6}$, which is a lot smaller compared to the learning rates chosen for other models (CNN: $1 \times 10^{-3}$, Custom Transformer: $3 \times 10^{-4}$). 
-This indicates that a slight increase in the learning rate could make drastic changes in the model's internal representations and destabilize the learning process due to extensive amount of parameters in the pretrained model.
-
-\subsection{Learning Curves}
-
-Figure \ref{fig:learning_curves} shows the learning curves for each model under their best-performing hyperparameter settings, with the red vertical line marking the epoch of peak validation performance. Validation F1-score reached a near-saturated level as early as the first epoch and showed minimal improvement afterward, even as training performance continued to rise. This suggests that later epochs contributed more to fitting the training data than to improving generalization. This may be due to limited dataset size (61,089 samples) and the short, low-variability nature of tweet-length inputs.
-
-This behavior aligns with known properties of CNNs and Transformer encoders. Both models can acquire discriminative features from sentence-level inputs rapidly, with CNNs capturing local n-gram patterns efficiently and Transformers modeling global context in a single attention step. Because the task involves short, self-contained text rather than long-context discourse, extensive training was likely unnecessary, and most useful features appear to have been learned within the first few epochs.
-
-\begin{figure}[h] % [t] 
-\vspace{-3mm}
-    \includegraphics[width=\linewidth]{learning_curves.png}
-    \caption{Learning curves}
-    \label{fig:learning_curves}
-\vspace{-6mm}
-\end{figure}
-
-\section{Results}
-% \section{Experiments and Results}
-We measure success in two ways. We first measure and compare the validation f1 score of the three models along with the confusion matrices and decide on the best model quantitatively. We then manually inspect the predictions of the best model that differed from the true label to see if the model also did well from a qualitative manner.
-
-% (10 points) How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? Justify your reasons with arguments supported by evidence and data.
-
-% \textbf{Important: This section should be rigorous and thorough. Present detailed information about decision you made, why you made them, and any evidence/experimentation to back them up. This is especially true if you leveraged existing architectures, pre-trained models, and code (i.e. do not just show results of fine-tuning a pre-trained model without any analysis, claims/evidence, and conclusions, as that tends to not make a strong project).}
-
 \begin{table*}
     \begin{center}
-    % \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
     \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
         \hline
-        \textbf{Model} & \textbf{Class} & % \textbf{True Label} &
-        \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{TN}
-         & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
+        \textbf{Model} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{Class} & 
+        \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{TN} \\
         \hline
-        \multirow{3}{*}{Transformer}
-            & time\_critical % & 3{,}040 
-            & 1{,}999 & 521 & 1{,}041 & 13{,}774 & 
-               \multirow{3}{*}{0.8545} & 
+        \multirow{3}{*}{\parbox{2.3cm}{\centering Custom \\ Transformer}}
+            & \multirow{3}{*}{0.8545} & 
                 \multirow{3}{*}{0.8204} & 
                  \multirow{3}{*}{0.7807} & 
-                 \multirow{3}{*}{0.7980} \\
-            & support\_and\_relief % & 3{,}040 
-            & 2{,}274 & 630 & 766 & 13{,}665 & & & &  \\
-            & non\_informative %& 11{,}255 
-            & 10{,}539 & 1{,}372 & 716 & 4{,}708 & & & & \\
+                 \multirow{3}{*}{0.7980} 
+            & time\_critical  
+            & 1{,}999 & 521 & 1{,}041 & 13{,}774 \\
+            & & & & & support\_and\_relief 
+            & 2{,}274 & 630 & 766 & 13{,}665   \\
+            & & & & & non\_informative 
+            & 10{,}539 & 1{,}372 & 716 & 4{,}708  \\
         \hline
-        \multirow{3}{*}{CNN}
-            & time\_critical % & 3{,}040 
-            & 2{,}335 & 766 & 705 & 13{,}529 &
+        \multirow{3}{*}{CNN} &
               \multirow{3}{*}{0.8694} &
               \multirow{3}{*}{0.8276} & 
               \multirow{3}{*}{0.8237} & 
-              \multirow{3}{*}{0.8255} \\
-            & support\_and\_relief %& 3{,}040 
-            & 2{,}380 & 543 & 660 & 13{,}752 & & & & \\
-            & non\_informative %& 11{,}255 
-            & 10{,}356 & 955 & 899 & 5{,}125 & & & &  \\
+              \multirow{3}{*}{0.8255} 
+              & time\_critical 
+              & 2{,}335 & 766 & 705 & 13{,}529 \\
+            & & & & & support\_and\_relief
+            & 2{,}380 & 543 & 660 & 13{,}752 \\
+            & & & & & non\_informative
+            & 10{,}356 & 955 & 899 & 5{,}125  \\
         \hline
         \multirow{3}{*}{DeBERTa}
-            & time\_critical %& 3{,}040 
-            & 2{,}484 & 724 & 556 & 13{,}571 &
-             \multirow{3}{*}{0.8877} &
+            & \multirow{3}{*}{0.8877} &
              \multirow{3}{*}{0.8434} &
              \multirow{3}{*}{0.8625} &
-             \multirow{3}{*}{0.8524} \\
-            & support\_and\_relief % & 3{,}040 
-            & 2{,}600 & 601 & 440 & 13{,}694 & & & &   \\
-            & non\_informative %& 11{,}255 
-            & 10{,}303 & 623 & 952 & 5{,}457 & & & &   \\
+             \multirow{3}{*}{0.8524} & 
+             time\_critical & 2{,}484 & 724 & 556 & 13{,}571 \\
+            & & & & & support\_and\_relief
+            & 2{,}600 & 601 & 440 & 13{,}694   \\
+             & & & & & non\_informative 
+            & 10{,}303 & 623 & 952 & 5{,}457   \\
         \hline
     \end{tabular}
     \end{center}
@@ -312,60 +271,93 @@ We measure success in two ways. We first measure and compare the validation f1 s
 \vspace{-4mm}
 \end{table*}
 
+\subsection{DeBERTa}
+
+Unlike our lightweight encoder-only Transformer, DeBERTa-v3-base is a substantially larger pre-trained model. It is built on 128,000-token vocabulary with approximately
+98,000,000 parameters in the embedding layer. It contains 12 Transformer encoder layers with a hidden size of 768 with the backbone alone accounting for about 86,000,000 parameters. This results in roughly 184,000,000 learnable parameters in total \cite{DeBERTaV3}. Since we do not modify the internal architecture, we simply reuse the predefined DeBERTa classification head and adapt only its output layer for our three-way label space. Thus, fine-tuning primarily updates the existing pretrained representations and a relatively small number of task-specific parameters on top.
+
+Hyperparameter tuning was performed while keeping the pretrained architecture fixed, modifying only learning rate, weight decay, and batch size. The best validation performance was achieved at $5\times10^{-6}$ with weight decay 0.01 and batch size 16. Changing the learning rate had the strongest impact on validation performance. Figure \ref{fig:pretrained_transformer_val_curve} shows the validation performances for learning rates of $1\times 10^{-6}$, $5\times 10^{-6}$, $1\times 10^{-5}$, and $2\times 10^{-5}$ while keeping other configuration fixed. We see that optimal learning rate value is $5 \times 10^{-6}$, which is a lot smaller compared to the learning rates chosen for other models (CNN: $1 \times 10^{-3}$, Custom Transformer: $3 \times 10^{-4}$). 
+This indicates that a slight increase in the learning rate could make drastic changes in the model's internal representations and destabilize the learning process due to extensive amount of parameters in the pretrained model.
+
+\subsection{Learning Curves}
+
+Figure \ref{fig:learning_curves} shows the learning curves for each model under their best-performing hyperparameter settings, with the red vertical line marking the epoch of peak validation performance. Validation F1-score reached a near-saturated level as early as the first epoch and showed minimal improvement afterward, even as training performance continued to rise. This suggests that later epochs contributed more to fitting the training data than to improving generalization. This may be due to limited dataset size (61,089 samples) and the short, low-variability nature of tweet-length inputs.
+
+\begin{figure}[h] % [t] 
+\vspace{-3mm}
+    \includegraphics[width=\linewidth]{learning_curves.png}
+    \caption{Learning curves}
+    \label{fig:learning_curves}
+\vspace{-6mm}
+\end{figure}
+
+This behavior aligns with known properties of CNNs and Transformer encoders. Both models can acquire discriminative features from sentence-level inputs rapidly, with CNNs capturing local n-gram patterns efficiently and Transformers modeling global context in a single attention step. Because the task involves short, self-contained text rather than long-context discourse, extensive training was likely unnecessary, and most useful features appear to have been learned within the first few epochs.
+
+\section{Results}
+
+To evaluate whether our models can successfully classify tweets into the target labels, we analyzed their performance on the test set. First, we analyzed the performance of each of the three models quantitatively to choose the best one. Since the classification of time\_critical and support\_and\_relief tweets is more important than identifying non\_informative ones, we conducted our analysis with particular attention to these two classes. Subsequently, we manually examined misclassified tweets from the selected model to gain a deeper qualitative understanding.
+
+% (10 points) How did you measure success? What experiments were used? What were the results, both quantitative and qualitative? Did you succeed? Did you fail? Why? Justify your reasons with arguments supported by evidence and data.
+
+% \textbf{Important: This section should be rigorous and thorough. Present detailed information about decision you made, why you made them, and any evidence/experimentation to back them up. This is especially true if you leveraged existing architectures, pre-trained models, and code (i.e. do not just show results of fine-tuning a pre-trained model without any analysis, claims/evidence, and conclusions, as that tends to not make a strong project).}
+
 \subsection{Quantitative Analysis}
-To ensure that we correctly account for dataset imbalances mentioned earlier, we take a look at four prediction metrics to make a quantitative analysis on the models' performance: accuracy, precision, recall, and f1 (macro). As can be seen in Table~\ref{tab:model_error_performances}, our pretrained transformer using DeBERTa-v3 outperforms the other models in all metrics. We also analyze the confusion matrices in Table~\ref{tab:model_error_performances} where we see a large difference in the counts for the \textbf{time\_critical} class among the three models. Although DeBERTa showed the highest true positive rate for the class, it also showed the highest false positive rate. This combination indicates that the model tends to more aggressively classify tweets as time\_critical class than the other two models. This can result from two possibilities: the model may be errorring on the side of caution and misclassifying tweets, or the model may be picking up subtle cues missed by the other models and correctly classifying a tweet that was mislabled. Another interesting point is that DeBERTa has the lowest false positives for the non\_informative class, meaning that the model predicted informative tweets as non\_informative. Although at first glance this may seem like the model risks filtering out critical tweets, we reserve judgment until a further section in Section~\ref{sec:qualitative}.
 
-Overall, these results provide strong quantitative evidence that DeBERTa-v3 is the most effective model in terms of our classification task and that the model is better at both identifying informative crisis-related tweets and avoiding incorrect predictions. While some class-specific behaviors warrant additional analysis, the quantitative findings clearly support DeBERTa as the most reliable model.
+Table \ref{tab:model_error_performances} shows a clear performance gradient across accuracy, precision, recall, and F1. The custom Transformer performed the lowest, the CNN showed moderate improvement, and the pretrained Transformer achieved the best overall performance.
 
-\subsection{Qualitative Analysis}\label{sec:qualitative}
-We now turn to DeBERTa for our qualitative analysis, focusing on how its predicted labels compare with the true labels in the CrisisBench dataset. To better understand the sources of error, we examine several categories of misclassifications. We first look at tweets classified as \textbf{time\_critical} by the CrisisBench dataset but predicted as \textbf{non\_informative} by DeBERTa to analyze the high false negative rates on the non\_informative class we saw in the quantitative analysis. \\
+A similar pattern appears in the confusion matrix. For both time\_critical and support\_and\_relief classes, true positive counts rise across the three models in the same order, indicating stronger sensitivity to minority classes. This is particularly notable given the strong class imbalance, with non\_informative tweets forming the majority of the dataset. Even under this imbalance, the pretrained model did not default to majority prediction. In contrast, true positive and false positive counts for non\_informative tweets gradually declined from the custom Transformer to pretrained Transformer, indicating that weaker models tended to default to the majority label when uncertain rather than making a careful distinction.
 
-\noindent\textbf{De-escalating essential tweets} After manually inspecting all 358 such tweets, we found that nearly all were \textbf{incorrectly labeled} as time\_critical in the original dataset and did not represent actionable, urgent, or location-specific cries for help. Many were entirely unrelated to crises, such as the tweet, ``how many fertilizer plants are there in texas?...'', which provides no emergency context. Out of the entire set, only a single tweet appeared potentially actionable: ``...Update -- Has Dementia! pls find him \#Missing ...``, though even this example is ambiguous, as it is unclear whether it relates to an ongoing crisis or a missing-person case independent of a disaster. DeBERTa therefore is highly effective at filtering out non-actionable content even when the ground truth labels incorrectly mark such tweets as \textbf{time\_critical}.\\
+Taken together, these results provide strong quantitative evidence that finetuned pretrained Transformer is the most effective model for this task. It demonstrates superior ability to identify critical crisis-related information while reducing unnecessary majority-class misclassification.
 
-\noindent\textbf{Escalating non-essential tweets}
-We now turn to the opposite case: tweets whose true label was \textbf{non\_informative} but were predicted as \textbf{time\_critical}. Although many of these tweets reference negative events, we find that DeBERTa often exhibits over-sensitivity to words associated with harm or danger. For example, DeBERTA classified this tweet as time\_critical: ``Tattingstone suitcase murder: ... Bernard Oliver death...``. Although it contains the word ``death'' and ``murder`` it is entirely unrelated to an ongoing crisis. This is one explanation of the high rate of false positives on the time\_critical class.
+It is important to note that this performance gain cannot be explained by model size alone. Although the pretrained Transformer has more learnable parameters than the other two models, the CNN still outperformed the custom Transformer despite having fewer parameters. This suggests that architectural design and representational strength play a more decisive role than capacity alone. In this context, models trained from scratch likely struggled to learn stable decision boundaries under limited training data, whereas DeBERTa-v3 benefited from large-scale pretraining and transferred linguistic knowledge. This reduced the effect of data scarcity and enabled better generalization to minority humanitarian labels, leading to the highest macro F1 and the most reliable predictions.
 
-In summary, our qualitative analysis reinforces the findings of our quantitative analysis: although the model does make mistakes, its errors are largely systematic (such as being consistently sensitive to certain words) and shows the potential for improvement once these patterns are corrected.
+\subsection{Qualitative Analysis}
 
-\section{Challenges}
+Qualitatively analysis was conducted by manually evaluating the classified tweets using our best model, the fine-tuned pretrained Transformer. We especially focused on the misclassified cases between the most important class (time\_critical) and the least important class (non\_informative). This allows us to highlight the worst-case scenarios in which urgent information is dismissed or non-actionable content is treated as critical.
+
+We began by examining the false negative cases, where our model misclassified time\_critical tweets as non\_informative. Manual inspection of all 358 instances revealed surprising result that the many of these tweets were \textit{mislabeled} within the CrisisBench dataset. Most of the misclassified tweets lacked actionable requests, location-specific information, or any indication of immediate need. Many were not even related to crisis events (e.g., ``how many fertilizer plants are there in texas?''). These findings suggest that a substantial portion of what appeared to be model errors were instead labeling issues within the dataset. In other words, the model correctly rejected content that the dataset mislabeled as urgent, indicating that the trained decision boundary was in many cases more reliable than the provided ground truth.
+
+Analysis of the false positive cases, where our model misclassified non\_informative tweets as time\_critical, also revealed informative patterns. Many of these tweets referred to negative events even though they were labeled as non\_informative in the CrisisBench dataset. For example, some tweets were not related to an \textit{ongoing} crisis but contained words associated with harm or danger such as ``death'' and ``murder'' (e.g., ``Tattingstone suitcase murder: Police appeal over Bernard Oliver death - BBC News''). This pattern suggests that the model tends to overreact to signals of possible danger rather than underreacting to them. On the other hand, some tweets appeared to be \textit{mislabeled} as non\_informative despite containing urgent information that could be used to save people's lives (e.g., ``Massive fire erupts at \#Chevron refinery in \#California'').
+
+Overall, the qualitative inspection shows that many apparent model errors were caused by issues in the CrisisBench dataset rather than by limitations of the classifier. The model often made judgments consistent with the semantic content of the tweets, rejecting mislabeled urgent posts and elevating non\_informative ones when they contained signs of danger. Although the model sometimes overreacted by predicting non\_informative tweets labeled as time\_critical, this tendency can be beneficial in practical crisis monitoring. Leaving ambiguous tweets for human review is safer than disregarding a potentially urgent message. Taken together, these findings indicate that the fine-tuned pretrained Transformer can capture the intended decision boundary and can be more reliable than the dataset labels, underscoring both the strength of the model and the limitations of the annotations.
+
+\section{Challenges and Limitations}
 % \textit{(5 points) What problems did you anticipate? What problems did you encounter? Did the very first thing you tried work?}
-We encountered several sources of difficulty throughout the project starting with the dataset itself. We anticipated that the unstructured nature of social media text would lead to noise and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training.
-We also ran into issues in our initial preprocessing pipeline as we saw tweets that were empty after preprocessing which led to unpredictable results during model training. We later updated our preprocessing pipeline to remove empty rows. Lastly, we encountered unexpected results during model training. Initially we anticipated the Transformer model to outperform CNN, but early experiments showed the opposite: CNN achieved stronger performance and training the Transformer for more epochs quickly produced signs of overfit which may have been due to the smaller dataset. Only after switching to a pretrained DeBERTa-v3 model were we able to see signs of performance better than our CNN model. Hyperparameter tuning was similarly challenging at first, and we found that reusing the hyperparameters suggested by the original CrisisBench work provided a stable starting point. What was interesting is that even after fine-tuning, we did not see much performance difference between the runs. This may have been because our transformer model was too complex to make any meaningful differences between the various configurations.
 
-% \textit{We anticipated that the unstructured nature of social media text would lead to noise, and that much of the data would be irrelevant to the disaster response. Directly running the model on the 11 original labels would have likely yielded poor, non-actionable results due to the label complexity and imbalance, which is why the re-mapping was necessary before training. Our very first approach to preprocessing did not work because we failed to account for rows with empty content after cleaning. This led to errors during model training, and we later added logic to remove empty rows after the cleansing process.}
+Before running the experiments, we anticipated several issues. 
+First, the informal and irregular style of Twitter text seemed likely to complicate training so we applied various preprocessing methods that were used in prior works. We additionally removed Twitter-specific tokens such as retweet markers and usernames and found that removing elements such as retweets and usernames generally improved performance. However, we have failed to address tweets that used hashtags instead of words (``Mexicans shed tears for hundreds killed in \#earthquake ...''). Removing hashtags in these tweets sometimes led to loss in significant information (``mexicans shed tears for hundreds killed in ...''), which presumably led to loss in performance. As hashtag removal is a common practice in Twitter analysis, future work could delve into the how we can identify hashtags that include meaningful information in the context and analyze the impact of properly using these hashtags.
 
-% We thought we would have to train a long time (high epoch), but signs of overfitting were found in early stages. Dataset size wasn't big enough?
-
-% At first, we expected Transformer based model to outperform CNN, but it didn't. We had to use pretrained model to outperform CNN.
-
-% Difficulty in tuning at first. reusing the hyperparameters in models from CrisisBench as a starting point helped tuning.
-
-% After fine-tuning, training didn't provide much difference between the models.
-
-
+We also expected the original 11 CrisisBench labels to be too fine-grained for reliable learning, which motivated our three-category mapping for both practical and methodological clarity. However, qualitative analysis revealed that the original CrisisBench dataset may have mislabeled cases, making the ground truth itself unreliable. Future work could delve into analyzing this issue and creating a better benchmark dataset for future research.
 
 \FloatBarrier
 
-\section{Work Division}
-
-% Please add a section on the delegation of work among team members at the end of the report, in the form of a table and paragraph description. This and references do \textbf{NOT} count towards your page limit. An example has been provided in Table \ref{tab:contributions}.
-
-Summary of contributions are provided in Table \ref{tab:contributions}.
-
 \begin{table*}
 \begin{center}
-\begin{tabular}{|l|p{8cm}|p{8cm}|} % {|l|c|p{8cm}|}
+\begin{tabular}{|l|p{4cm}|p{10cm}|} % {|l|c|p{8cm}|}
 \hline
 Student Name & Contributed Aspects & Details \\
 \hline\hline
-Jinwoo Jeong & Data Preprocessing, Transformer implementation, Training and Analysis & Preprocessed all the Tweeter data used in the project. Implemented custom transformer and fine-tuned pretrained transformer model. \\
-Jade Kim & CNN Implementation, Training and Analysis & Implemented CNN model. Fine-tuned CNN and custom transformer. Analyzed effect of number of filters in CNN. \\
+Jinwoo Jeong & 
+Data Preprocessing, Model Implementation and Training, Analysis & 
+Preprocessed all the Tweeter data used in the project. Implemented custom transformer and fine-tuned pretrained transformer model. Focused on writing the Introduction, Approach, Training, Results, Challenges and Limitations sections
+\\
+\hline
+Jade Kim & 
+Model Implementation and Training, Analysis & 
+Implemented CNN model. Fine-tuned CNN and custom transformer. Focused on qualitative analysis and decided to focus on misclassfication between time\_critical and non\_informative cases. Created CNN architecture figure.
+\\
 \hline
 \end{tabular}
 \end{center}
 \caption{Contributions of team members.}
 \label{tab:contributions}
 \end{table*}
+
+\section{Work Division}
+
+% Please add a section on the delegation of work among team members at the end of the report, in the form of a table and paragraph description. This and references do \textbf{NOT} count towards your page limit. An example has been provided in Table \ref{tab:contributions}.
+
+Summary of contributions are provided in Table \ref{tab:contributions}.
 
 {\small
 \bibliographystyle{ieee_fullname}
@@ -386,6 +378,16 @@ Jade Kim & CNN Implementation, Training and Analysis & Implemented CNN model. Fi
 The Github repository for our final project is at:
 All code for our experiments can be found in our Github repository \url{https://github.com/bugoverdose/dl-twitter-crisis}.
 
+\section{Model Architectures}
+
+\begin{figure}[h]
+\vspace{-1mm}
+    \centering
+    \includegraphics[width=1.0  \linewidth]{cnn_flowchart.png}
+    \caption{CNN Architecture}
+    \label{fig:cnn_flowchart}
+\vspace{-3mm}
+\end{figure}
 
 \section{Validation Curve Supplementary}
 
@@ -393,9 +395,9 @@ All code for our experiments can be found in our Github repository \url{https://
 \centering
 \begin{subtable}{0.9\linewidth}
 \centering
-    \begin{tabular}{|l|l|l|l|}
+    \begin{tabular}{|r|r|r|r|}
     \hline
-        number of filters & epoch & train\_f1 & val\_f1 \\ \hline
+        number of filters & epoch & train F1 & validation F1 \\ \hline
         25  & 6 & 0.8490 & 0.8258 \\ \hline
         50  & 4 & 0.8873 & 0.8266 \\ \hline
         75  & 5 & 0.8593 & 0.8253 \\ \hline
@@ -409,9 +411,9 @@ All code for our experiments can be found in our Github repository \url{https://
 
 \begin{subtable}{0.9\linewidth}
 \centering
-    \begin{tabular}{|l|l|l|l|}
+    \begin{tabular}{|r|r|r|r|}
     \hline
-        learning rate & epoch & train\_f1 & val\_f1 \\ \hline
+        learning rate & epoch & train F1 & validation F1 \\ \hline
         1e-4 & 3 & 0.7992 & 0.7676 \\ \hline
         3e-4 & 3 & 0.8363 & 0.7920 \\ \hline
         1e-3 & 4 & 0.8171 & 0.7793 \\ \hline
@@ -424,9 +426,9 @@ All code for our experiments can be found in our Github repository \url{https://
 
 \begin{subtable}{0.9\linewidth}
 \centering
-    \begin{tabular}{|l|l|l|l|}
+    \begin{tabular}{|r|r|r|r|}
     \hline
-        learning rate & epoch & train\_f1 & val\_f1 \\ \hline
+        learning rate & epoch & train F1 & validation F1 \\ \hline
         1e-6 & 16 & 0.9570 & 0.8583 \\ \hline
         5e-6 & 7 & 0.9436 & 0.8603 \\ \hline
         1e-5 & 5 & 0.9675 & 0.8584 \\ \hline
